@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="en" data-color-mode="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>herdr-gamepad — drive Herdr with a game controller</title>
+<meta name="description" content="A Herdr plugin that maps any game controller to Herdr: patrol AI agents, split panes and switch workspaces from the couch. Live configurator, generated gamepad.toml, macOS, zero dependencies.">
+<link rel="canonical" href="https://htlin222.github.io/herdr-gamepad/">
+<meta name="keywords" content="herdr, herdr-plugin, herdr plugin, gamepad, game controller, terminal multiplexer, AI agents, xbox controller, 8bitdo, macOS, tmux prefix, gamepad.toml">
+<meta name="author" content="htlin222">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="herdr-gamepad">
+<meta property="og:title" content="herdr-gamepad — drive Herdr with a game controller">
+<meta property="og:description" content="Patrol your AI agents, split panes and switch workspaces from the couch. Any gamepad, mapped by you in 60 seconds.">
+<meta property="og:url" content="https://htlin222.github.io/herdr-gamepad/">
+<meta property="og:image" content="https://htlin222.github.io/herdr-gamepad/gamepad.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="herdr-gamepad — drive Herdr with a game controller">
+<meta name="twitter:description" content="Patrol your AI agents, split panes and switch workspaces from the couch. Any gamepad, mapped by you in 60 seconds.">
+<meta name="twitter:image" content="https://htlin222.github.io/herdr-gamepad/gamepad.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#127918;</text></svg>">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "herdr-gamepad",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "macOS",
+  "description": "A Herdr plugin that drives Herdr with a game controller — patrol AI agents, split panes and switch workspaces from a gamepad.",
+  "url": "https://htlin222.github.io/herdr-gamepad/",
+  "codeRepository": "https://github.com/htlin222/herdr-gamepad",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": { "@type": "Person", "name": "htlin222" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<style>
+/* ── Primer primitives ─────────────────────────────────────────────── */
+:root{
+  --fgColor-default:#1f2328; --fgColor-muted:#59636e; --fgColor-accent:#0969da;
+  --fgColor-success:#1a7f37; --fgColor-attention:#9a6700; --fgColor-done:#8250df;
+  --bgColor-default:#ffffff; --bgColor-muted:#f6f8fa; --bgColor-inset:#f6f8fa;
+  --bgColor-accent-muted:#ddf4ff; --bgColor-attention-muted:#fff8c5;
+  --bgColor-neutral-muted:#818b981f;
+  --borderColor-default:#d1d9e0; --borderColor-muted:#d1d9e0b3;
+  --borderColor-accent-emphasis:#0969da; --borderColor-attention-emphasis:#9a6700;
+  --button-default-bgColor-rest:#f6f8fa; --button-default-bgColor-hover:#eef1f4;
+  --button-primary-bgColor-rest:#1f883d; --button-primary-bgColor-hover:#1a7f37;
+  --shadow-resting-small:0 1px 0 rgba(31,35,40,.04);
+  --overlay-shadow:0 8px 24px rgba(31,35,40,.12);
+  --pad-hit:#0969da; --pad-hit-glow:#0969da55;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-color-mode="light"]){
+  --fgColor-default:#f0f6fc; --fgColor-muted:#9198a1; --fgColor-accent:#4493f8;
+  --fgColor-success:#3fb950; --fgColor-attention:#d29922; --fgColor-done:#ab7df8;
+  --bgColor-default:#0d1117; --bgColor-muted:#151b23; --bgColor-inset:#010409;
+  --bgColor-accent-muted:#388bfd1a; --bgColor-attention-muted:#bb800926;
+  --bgColor-neutral-muted:#656c7633;
+  --borderColor-default:#3d444d; --borderColor-muted:#3d444db3;
+  --borderColor-accent-emphasis:#316dca; --borderColor-attention-emphasis:#9e6a03;
+  --button-default-bgColor-rest:#212830; --button-default-bgColor-hover:#262c36;
+  --button-primary-bgColor-rest:#238636; --button-primary-bgColor-hover:#2ea043;
+  --shadow-resting-small:0 0 transparent; --overlay-shadow:0 8px 24px #010409;
+  --pad-hit:#4493f8; --pad-hit-glow:#4493f866;
+}}
+[data-color-mode="dark"]{
+  --fgColor-default:#f0f6fc; --fgColor-muted:#9198a1; --fgColor-accent:#4493f8;
+  --fgColor-success:#3fb950; --fgColor-attention:#d29922; --fgColor-done:#ab7df8;
+  --bgColor-default:#0d1117; --bgColor-muted:#151b23; --bgColor-inset:#010409;
+  --bgColor-accent-muted:#388bfd1a; --bgColor-attention-muted:#bb800926;
+  --bgColor-neutral-muted:#656c7633;
+  --borderColor-default:#3d444d; --borderColor-muted:#3d444db3;
+  --borderColor-accent-emphasis:#316dca; --borderColor-attention-emphasis:#9e6a03;
+  --button-default-bgColor-rest:#212830; --button-default-bgColor-hover:#262c36;
+  --button-primary-bgColor-rest:#238636; --button-primary-bgColor-hover:#2ea043;
+  --shadow-resting-small:0 0 transparent; --overlay-shadow:0 8px 24px #010409;
+  --pad-hit:#4493f8; --pad-hit-glow:#4493f866;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0; background:var(--bgColor-default); color:var(--fgColor-default);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+a{color:var(--fgColor-accent);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{line-height:1.25;margin:0 0 8px;font-weight:600}
+h1{font-size:32px} h2{font-size:24px} h3{font-size:16px;margin-top:32px}
+p{margin:0 0 16px}
+ul{margin:0 0 16px;padding-left:22px}
+
+.container{max-width:1012px;margin:0 auto;padding:0 24px}
+.container-wide{max-width:1320px;margin:0 auto;padding:0 24px}
+.section{padding:48px 0;border-top:1px solid var(--borderColor-muted)}
+.subtitle{color:var(--fgColor-muted);font-size:16px;margin:0 0 24px}
+
+.AppHeader{
+  position:sticky;top:0;z-index:20;backdrop-filter:saturate(180%) blur(8px);
+  background:color-mix(in srgb,var(--bgColor-default) 88%,transparent);
+  border-bottom:1px solid var(--borderColor-muted);
+}
+.AppHeader-inner{display:flex;align-items:center;gap:16px;height:56px}
+.AppHeader-brand{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--fgColor-default)}
+.AppHeader-brand:hover{text-decoration:none}
+.AppHeader nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.AppHeader nav a{color:var(--fgColor-muted);padding:5px 10px;border-radius:6px;font-weight:500}
+.AppHeader nav a:hover{background:var(--bgColor-neutral-muted);color:var(--fgColor-default);text-decoration:none}
+
+.Box{border:1px solid var(--borderColor-default);border-radius:6px;background:var(--bgColor-default)}
+.Box-header{
+  padding:12px 16px;background:var(--bgColor-muted);
+  border-bottom:1px solid var(--borderColor-default);
+  border-radius:5px 5px 0 0;font-weight:600;display:flex;align-items:center;gap:8px;
+}
+.Box-body{padding:16px}
+.Box-row{padding:12px 16px;border-top:1px solid var(--borderColor-muted)}
+
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;font-size:14px;font-weight:500;line-height:20px;
+  color:var(--fgColor-default);background:var(--button-default-bgColor-rest);
+  border:1px solid var(--borderColor-default);border-radius:6px;
+  box-shadow:var(--shadow-resting-small);cursor:pointer;
+  transition:background .12s ease;
+}
+.btn:hover{background:var(--button-default-bgColor-hover);text-decoration:none}
+.btn-primary{color:#fff;background:var(--button-primary-bgColor-rest);border-color:rgba(31,35,40,.15)}
+.btn-primary:hover{background:var(--button-primary-bgColor-hover)}
+.btn-sm{padding:3px 10px;font-size:12px;line-height:18px}
+
+.Label{
+  display:inline-block;padding:0 7px;font-size:12px;font-weight:500;line-height:18px;
+  border:1px solid var(--borderColor-default);border-radius:2em;color:var(--fgColor-muted);
+}
+.Label--accent{color:var(--fgColor-accent);border-color:var(--borderColor-accent-emphasis)}
+.Label--done{color:var(--fgColor-done);border-color:var(--fgColor-done)}
+
+.flash{
+  padding:16px;border:1px solid var(--borderColor-accent-emphasis);border-radius:6px;
+  background:var(--bgColor-accent-muted);margin:0 0 16px;
+}
+.flash-warn{border-color:var(--borderColor-attention-emphasis);background:var(--bgColor-attention-muted)}
+
+kbd{
+  display:inline-block;padding:2px 6px;font-size:12px;line-height:14px;
+  color:var(--fgColor-default);background:var(--bgColor-muted);
+  border:1px solid var(--borderColor-default);border-radius:6px;
+  box-shadow:inset 0 -1px 0 var(--borderColor-default);
+}
+pre{margin:0;padding:16px;overflow:auto;font-size:12.5px;line-height:1.5;
+  background:var(--bgColor-muted);border-radius:6px}
+p code,li code,td code,th code{padding:.2em .4em;font-size:85%;border-radius:6px;
+  background:var(--bgColor-neutral-muted);white-space:nowrap}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:0 0 16px}
+th,td{padding:6px 13px;border:1px solid var(--borderColor-default);text-align:left;vertical-align:top}
+th{background:var(--bgColor-muted);font-weight:600}
+
+.copy-wrap{position:relative}
+.copy-wrap .btn{position:absolute;top:8px;right:8px}
+.grid{display:grid;gap:16px}
+@media(min-width:900px){ .grid-2{grid-template-columns:1fr 1fr} }
+
+.hero{padding:56px 0 40px;text-align:center}
+.hero h1{font-size:40px;letter-spacing:-.5px}
+.hero .lede{font-size:18px;color:var(--fgColor-muted);max-width:640px;margin:0 auto 24px}
+.hero-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.hero figure{margin:0}
+.hero img{width:100%;height:auto;border:1px solid var(--borderColor-default);
+  border-radius:12px;box-shadow:var(--overlay-shadow)}
+figcaption{font-size:12px;color:var(--fgColor-muted);margin-top:8px}
+
+.cfg{display:grid;gap:24px}
+@media(min-width:1080px){ .cfg{grid-template-columns:minmax(380px,1fr) minmax(560px,1.2fr);align-items:start} }
+.pad-panel{position:sticky;top:72px}
+svg.pad{width:100%;height:auto;display:block}
+svg.pad .hw{transition:fill .05s linear,stroke .05s linear}
+svg.pad .hw.on{fill:var(--pad-hit)!important;stroke:var(--pad-hit)!important;
+  filter:drop-shadow(0 0 8px var(--pad-hit-glow))}
+svg.pad .arm{fill:transparent;stroke:none}
+svg.pad .arm.on{fill:var(--pad-hit)!important;opacity:.9;filter:none}
+svg.pad text.glyph{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;font-weight:700;text-anchor:middle}
+svg.pad text.eng{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;fill:#7c8896;text-anchor:middle;letter-spacing:.4px}
+svg.pad #stick-left,svg.pad #stick-right{transition:transform .05s linear}
+
+.status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fgColor-muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--fgColor-muted);flex:none}
+.dot.live{background:var(--fgColor-success);box-shadow:0 0 0 3px color-mix(in srgb,var(--fgColor-success) 25%,transparent)}
+
+table.map{font-size:13px;margin:0}
+table.map th,table.map td{padding:4px 8px}
+table.map td:first-child{white-space:nowrap}
+table.map tr.group td{background:var(--bgColor-muted);font-weight:600;font-size:11px;
+  text-transform:uppercase;letter-spacing:.5px;color:var(--fgColor-muted)}
+table.map tr.hit td{background:var(--bgColor-accent-muted)}
+table.map tr{transition:background .25s ease}
+select{width:100%;padding:3px 6px;font-size:12.5px;font-family:inherit;
+  color:var(--fgColor-default);background:var(--bgColor-default);
+  border:1px solid var(--borderColor-default);border-radius:6px}
+select:disabled{opacity:.45}
+input[type=checkbox]{accent-color:var(--fgColor-accent)}
+
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.field{display:flex;align-items:center;gap:8px;font-size:13px}
+.field select{width:auto;min-width:110px}
+footer{padding:40px 0;border-top:1px solid var(--borderColor-muted);color:var(--fgColor-muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="AppHeader">
+  <div class="container-wide AppHeader-inner">
+    <a class="AppHeader-brand" href="#top">&#127918; herdr-gamepad</a>
+    <nav>
+      <a href="#install">Install</a>
+      <a href="#configure">Configure</a>
+      <a href="#manual">Manual</a>
+      <a href="#why">Why</a>
+      <a href="https://github.com/htlin222/herdr-gamepad">GitHub</a>
+      <a href="#" id="theme-toggle" title="Toggle theme">&#9689;</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="container">
+    <h1>Drive Herdr with a game controller</h1>
+    <p class="lede">
+      Patrol your AI agents, split panes and switch workspaces from the couch.
+      Any gamepad, mapped by you in 60 seconds.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#install">Install</a>
+      <a class="btn" href="#configure">Open the configurator</a>
+      <a class="btn" href="https://github.com/htlin222/herdr-gamepad">View source</a>
+    </div>
+    <figure>
+      <img src="gamepad.png" alt="Annotated gamepad showing the default bindings: triggers cycle agents, bumpers cycle tabs, D-pad focuses panes, sticks scroll and send arrow keys, and holding BACK opens a prefix layer for zoom, splits and panels.">
+      <figcaption>The pad as it ships. Everything here is one line in <code>gamepad.toml</code>.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section" id="install">
+  <div class="container">
+    <h2>Install</h2>
+    <p class="subtitle">Hand it to your agent, or do it yourself. Both take about a minute.</p>
+
+    <div class="Box" style="margin-bottom:24px">
+      <div class="Box-header">
+        <span>Paste this at your coding agent</span>
+        <span class="Label Label--accent">Claude Code &middot; Codex &middot; Cursor</span>
+      </div>
+      <div class="copy-wrap">
+        <button class="btn btn-sm" data-copy="#agent-prompt">Copy</button>
+        <pre id="agent-prompt">Install the herdr-gamepad plugin from https://github.com/htlin222/herdr-gamepad
+into my Herdr setup on macOS. Work through it step by step and stop to tell me
+whenever you need something from me:
+
+1. Check that `herdr` is on PATH and is version 0.7.0 or newer (`herdr --version`),
+   and that `swiftc` exists (`swiftc --version`). If swiftc is missing, tell me to
+   run `xcode-select --install` and wait.
+2. Install the plugin: `herdr plugin install https://github.com/htlin222/herdr-gamepad`
+   This runs build.sh, which compiles a single dependency-free Swift binary.
+3. Copy the sample config into place:
+   `cp config/gamepad.toml "$(herdr plugin config-dir gamepad)/gamepad.toml"`
+4. Add a keybinding to ~/.config/herdr/config.toml so I can reach learn mode:
+       [[keys.command]]
+       key = "prefix+g"
+       type = "plugin_action"
+       command = "gamepad.learn"
+       description = "Gamepad learn mode"
+   then `herdr server reload-config`.
+5. Start the daemon: `herdr plugin action invoke gamepad.start`, then confirm with
+   `herdr plugin action invoke gamepad.status`.
+6. Tell me to grant Accessibility permission to the terminal that started the daemon
+   (System Settings -&gt; Privacy &amp; Security -&gt; Accessibility). This is only needed
+   for the [input] block: arrow keys, Return/Escape/Space and scrolling. Herdr actions
+   work without it. Restart the daemon after I approve.
+7. Verify: `herdr plugin action invoke gamepad.learn`, and tell me to press a few
+   buttons and report what names appear.</pre>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="Box">
+        <div class="Box-header">Or three commands</div>
+        <div class="copy-wrap">
+          <button class="btn btn-sm" data-copy="#manual-install">Copy</button>
+          <pre id="manual-install">herdr plugin install https://github.com/htlin222/herdr-gamepad
+cp config/gamepad.toml "$(herdr plugin config-dir gamepad)/gamepad.toml"
+herdr plugin action invoke gamepad.start</pre>
+        </div>
+      </div>
+      <div class="Box">
+        <div class="Box-header">What you need</div>
+        <div class="Box-body" style="font-size:13px">
+          <ul>
+            <li>macOS</li>
+            <li>Herdr <strong>0.7.0</strong> or newer</li>
+            <li>Swift &mdash; ships with the Xcode command line tools
+              (<code>xcode-select --install</code>)</li>
+            <li>A gamepad. USB or Bluetooth, Xbox-style or 8BitDo in X mode.</li>
+          </ul>
+          <p style="margin:0;color:var(--fgColor-muted)">
+            No npm, no native module, no runtime dependency. <code>build.sh</code>
+            produces one binary.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="configure">
+  <div class="container-wide">
+    <h2>Map your pad</h2>
+    <p class="subtitle">
+      Plug a controller in and press something &mdash; the picture lights up and the table
+      jumps to that row. Pick actions, then copy the <code>gamepad.toml</code> below.
+    </p>
+
+    <div class="cfg">
+      <div class="pad-panel">
+        <div class="Box">
+          <div class="Box-header">
+            <span>Your controller</span>
+            <span class="Label" id="pad-count" style="margin-left:auto">0 connected</span>
+          </div>
+          <div class="Box-body" style="padding:8px">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="436 214 728 528" class="pad">
+<defs>
+  <linearGradient id="pbody" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3d4653"/><stop offset=".55" stop-color="#2a323d"/>
+    <stop offset="1" stop-color="#191f27"/>
+  </linearGradient>
+  <linearGradient id="pctrl" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#454f5d"/><stop offset="1" stop-color="#2b333e"/>
+  </linearGradient>
+  <linearGradient id="ptrig" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3c4552"/><stop offset="1" stop-color="#252d38"/>
+  </linearGradient>
+  <radialGradient id="psheen" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#6d7b8e" stop-opacity=".45"/>
+    <stop offset="1" stop-color="#6d7b8e" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="pcap" cx="0.4" cy="0.3" r="0.85">
+    <stop offset="0" stop-color="#4e5866"/><stop offset="1" stop-color="#262e39"/>
+  </radialGradient>
+</defs>
+<g class="hw"><rect id="in-lt" x="634" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="#586372" stroke-width="1.6"/>
+<rect id="in-rt" x="874" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="#586372" stroke-width="1.6"/>
+<rect id="in-lb" x="620" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<rect id="in-rb" x="860" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/></g>
+<path d="M 800,308 C 742,300 674,302 620,322 C 546,350 476,398 464,472 C 452,540 466,616 498,670 C 530,722 592,726 622,682 C 650,646 664,616 680,600 C 710,576 750,566 800,566 C 850,566 890,576 920,600 C 936,616 950,646 978,682 C 1008,726 1070,722 1102,670 C 1134,616 1148,540 1136,472 C 1124,398 1054,350 980,322 C 926,302 858,300 800,308 Z" fill="url(#pbody)" stroke="#4b5666" stroke-width="2.2"/>
+<ellipse cx="800" cy="380" rx="300" ry="95" fill="url(#psheen)" opacity=".5"/>
+<circle cx="662" cy="396" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+<g id="stick-left"><circle id="in-l3" cx="662" cy="396" r="31" fill="url(#pcap)" stroke="#586372" stroke-width="1.6" class="hw"/><circle cx="662" cy="396" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>
+<circle cx="872" cy="500" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+<g id="stick-right"><circle id="in-r3" cx="872" cy="500" r="31" fill="url(#pcap)" stroke="#586372" stroke-width="1.6" class="hw"/><circle cx="872" cy="500" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>
+<circle cx="742" cy="500" r="42" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+<path d="M 729.5,465 L 754.5,465 L 754.5,487.5 L 777,487.5 L 777,512.5 L 754.5,512.5 L 754.5,535 L 729.5,535 L 729.5,512.5 L 707,512.5 L 707,487.5 L 729.5,487.5 Z" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6" stroke-linejoin="round"/>
+<rect id="in-dpad_up" class="hw arm" x="729.5" y="465" width="25.0" height="35" rx="4" fill="transparent"/>
+<rect id="in-dpad_down" class="hw arm" x="729.5" y="500" width="25.0" height="35" rx="4" fill="transparent"/>
+<rect id="in-dpad_left" class="hw arm" x="707" y="487.5" width="35" height="25.0" rx="4" fill="transparent"/>
+<rect id="in-dpad_right" class="hw arm" x="742" y="487.5" width="35" height="25.0" rx="4" fill="transparent"/>
+<circle id="in-y" class="hw" cx="972" cy="359" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<text x="972" y="366" class="glyph" fill="#e3b341" pointer-events="none">Y</text>
+<circle id="in-b" class="hw" cx="1023" cy="410" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<text x="1023" y="417" class="glyph" fill="#ff9492" pointer-events="none">B</text>
+<circle id="in-a" class="hw" cx="972" cy="461" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<text x="972" y="468" class="glyph" fill="#7ee787" pointer-events="none">A</text>
+<circle id="in-x" class="hw" cx="921" cy="410" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<text x="921" y="417" class="glyph" fill="#79c0ff" pointer-events="none">X</text>
+<circle id="in-guide" class="hw" cx="800" cy="348" r="17" fill="#12171e" stroke="#333c4a" stroke-width="1.6"/>
+<circle cx="800" cy="348" r="8" fill="none" stroke="#2b3340" stroke-width="1.4" pointer-events="none"/>
+<rect id="in-back" class="hw" x="729" y="371" width="38" height="22" rx="11" fill="url(#pctrl)" stroke="#586372" stroke-width="1.4"/>
+<text x="748" y="410" class="eng" pointer-events="none">back</text>
+<rect id="in-start" class="hw" x="833" y="371" width="38" height="22" rx="11" fill="url(#pctrl)" stroke="#586372" stroke-width="1.4"/>
+<text x="852" y="410" class="eng" pointer-events="none">start</text>
+</svg>
+          </div>
+          <div class="Box-row">
+            <div class="status">
+              <span class="dot" id="pad-dot"></span>
+              <span id="pad-name">No controller detected &mdash; plug one in and press a button.</span>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--fgColor-muted);margin:12px 0 0">
+          Read live from the browser's Gamepad API, which reports the same W3C standard
+          layout the plugin's names follow &mdash; so whatever lights up here is exactly
+          the name to write in the TOML. Nothing leaves your tab.
+        </p>
+      </div>
+
+      <div>
+        <div class="Box" style="margin-bottom:16px">
+          <div class="Box-body toolbar">
+            <label class="field">Prefix button <select id="prefix-btn"></select></label>
+            <span class="Label Label--done">&#9670; prefix layer</span>
+            <span style="margin-left:auto"></span>
+            <button class="btn btn-sm" id="reset">Reset to defaults</button>
+            <button class="btn btn-sm" id="clear">Clear all</button>
+          </div>
+        </div>
+
+        <div id="warnings"></div>
+
+        <div class="Box" style="overflow:hidden">
+          <table class="map">
+            <thead>
+              <tr>
+                <th style="width:118px">Input</th>
+                <th>Base layer</th>
+                <th>&#9670; Prefix layer</th>
+                <th style="width:40px" title="Auto-repeat while held">Rep</th>
+              </tr>
+            </thead>
+            <tbody id="map-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="Box" style="margin-top:24px">
+      <div class="Box-header">
+        <span>gamepad.toml</span>
+        <span style="margin-left:auto;font-weight:400;color:var(--fgColor-muted);font-size:12px">
+          save at <code>$(herdr plugin config-dir gamepad)/gamepad.toml</code>
+        </span>
+      </div>
+      <div class="copy-wrap">
+        <button class="btn btn-sm" data-copy="#toml-out">Copy</button>
+        <pre id="toml-out"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="manual">
+  <div class="container">
+    <h2>Manual</h2>
+    <p class="subtitle">Everything between plugging the pad in and forgetting it is there.</p>
+
+    <h3 id="two-blocks">1 &middot; Two blocks, one shape</h3>
+    <p>
+      Bindings split by <em>who is being talked to</em>, and both use the same shape as
+      Herdr's own <code>[keys]</code>:
+    </p>
+    <pre>[herdr]                      # operations on Herdr
+next_agent = "rt"
+next_tab   = "rb"
+focus_pane_left = "dpad_left"
+
+[input]                      # pretend to be a keyboard or mouse
+return = "a"
+up = { input = "right_up", repeat = true }</pre>
+    <p style="margin-top:16px">
+      Everything in <code>[herdr]</code> is sent as <strong>your</strong> keybinding for
+      it, so the controller behaves exactly like the keyboard. Rebind Herdr and this
+      follows along &mdash; nothing to update here. Bind several inputs to one behaviour
+      with a list, exactly like Herdr:
+      <code>focus_pane_left = ["dpad_left", "left_left"]</code>.
+    </p>
+
+    <h3 id="prefix">2 &middot; The prefix layer</h3>
+    <p>
+      One button gives every other input a second meaning, the way tmux's prefix key
+      works. Despite the name, <code>hold</code> is reached two ways, and both are always
+      live:
+    </p>
+    <table>
+      <tr><td style="width:80px"><strong>Hold</strong></td>
+          <td>keep <kbd>BACK</kbd> down, press <kbd>B</kbd></td></tr>
+      <tr><td><strong>Tap</strong></td>
+          <td>press and release <kbd>BACK</kbd> on its own, then press <kbd>B</kbd> within
+              <code>prefix_timeout_ms</code></td></tr>
+    </table>
+    <p>
+      Tapping the armed prefix again backs out of it. Anything else you press spends it,
+      so a stray tap costs you one button, not a mode you are stuck in. Set
+      <code>prefix_timeout_ms = 0</code> to switch tapping off and keep hold only.
+      A button used as a prefix never does anything by itself.
+    </p>
+    <div class="flash">
+      <strong>The layer <em>is</em> Herdr's prefix mode.</strong> Pressing the pad's prefix
+      button sends your Herdr prefix (<code>ctrl+a</code>) for real, the moment your thumb
+      lands &mdash; so Herdr shows the mode exactly as it does from the keyboard, and the
+      second press is a plain key rather than a chord this plugin fakes.
+    </div>
+    <p>
+      The price: everything in the layer has to be a Herdr action you bound
+      <em>through</em> the prefix, e.g. <code>split_vertical = "prefix+b"</code> in
+      <code>config.toml</code>. Prefix mode eats the next key, so these are refused at
+      startup, each with a message naming the binding:
+    </p>
+    <table>
+      <thead><tr><th style="width:230px">Refused</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>an <code>[input]</code> keystroke</td>
+            <td>it would go to Herdr, not to your pane</td></tr>
+        <tr><td>a built-in (<code>agent_*</code>)</td>
+            <td>talks over the socket and sends no key at all, so the mode would stay open</td></tr>
+        <tr><td>a non-prefix binding</td>
+            <td><code>next_tab = "shift+right"</code> &mdash; Herdr would eat the chord and match nothing</td></tr>
+      </tbody>
+    </table>
+    <p>Put those in the base layer instead; that is what the base layer is for.</p>
+
+    <h3 id="permission">3 &middot; Accessibility permission</h3>
+    <p>
+      The <code>[input]</code> block synthesises real key and wheel events, and macOS will
+      not let any process do that without permission:
+    </p>
+    <div class="flash flash-warn">
+      System Settings &rarr; Privacy &amp; Security &rarr; Accessibility.
+      The prompt names the <strong>terminal that started the daemon</strong>, not this
+      plugin. Approve that, then restart the daemon. The <code>[herdr]</code> block needs
+      none of this.
+    </div>
+
+    <h3 id="keybinding">4 &middot; Reach the plugin from the keyboard</h3>
+    <p>
+      Herdr 0.7 does not bind keys declared in a plugin manifest, and plugin actions run
+      without a TTY &mdash; which is why every interactive flow reports through
+      notifications rather than printing to a terminal. Bind learn mode yourself in
+      <code>~/.config/herdr/config.toml</code>:
+    </p>
+    <div class="copy-wrap">
+      <button class="btn btn-sm" data-copy="#keybind-snip">Copy</button>
+      <pre id="keybind-snip">[[keys.command]]
+key = "prefix+g"
+type = "plugin_action"
+command = "gamepad.learn"
+description = "Gamepad learn mode"</pre>
+    </div>
+    <p style="margin-top:16px">then <code>herdr server reload-config</code>.</p>
+
+    <h3 id="actions">5 &middot; Plugin actions</h3>
+    <table>
+      <thead><tr><th style="width:190px">Action</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>gamepad.setup</code></td><td>guided setup, writes your controller profile</td></tr>
+        <tr><td><code>gamepad.learn</code></td><td>show button IDs as you press them</td></tr>
+        <tr><td><code>gamepad.start</code></td><td>start the daemon</td></tr>
+        <tr><td><code>gamepad.stop</code></td><td>stop the daemon</td></tr>
+        <tr><td><code>gamepad.status</code></td><td>connected pads, daemon state</td></tr>
+      </tbody>
+    </table>
+    <p>Run any of them with <code>herdr plugin action invoke gamepad.&lt;id&gt;</code>.</p>
+
+    <h3 id="tuning">6 &middot; Tuning</h3>
+    <table>
+      <thead><tr><th style="width:180px">Key</th><th style="width:80px">Default</th><th>What it changes</th></tr></thead>
+      <tbody>
+        <tr><td><code>deadzone</code></td><td>0.25</td><td>how far a stick moves before it counts. Raise it if things trigger on their own.</td></tr>
+        <tr><td><code>trigger_threshold</code></td><td>0.5</td><td>how far <code>lt</code>/<code>rt</code> must be squeezed to count</td></tr>
+        <tr><td><code>repeat_delay_ms</code></td><td>400</td><td>hold this long before auto-repeat starts</td></tr>
+        <tr><td><code>repeat_rate_ms</code></td><td>80</td><td>then repeat this often</td></tr>
+        <tr><td><code>scroll_invert</code></td><td>false</td><td>flip scroll direction &mdash; depends on your macOS natural-scrolling setting, so there is no right default</td></tr>
+        <tr><td><code>prefix_timeout_ms</code></td><td>2000</td><td>after <em>tapping</em> a prefix, how long it waits for the next button. 0 = hold-only.</td></tr>
+        <tr><td><code>prefix_notify</code></td><td>false</td><td>announce an armed prefix as a notification. Off by default: Herdr already shows the mode, and notifications are rate-limited and hidden for the focused tab.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="troubleshooting">7 &middot; When it does not work</h3>
+    <table>
+      <thead><tr><th style="width:290px">Symptom</th><th>Cause</th></tr></thead>
+      <tbody>
+        <tr><td>Stick clicks (<code>l3</code>/<code>r3</code>) do nothing</td>
+            <td>Many third-party pads declare them and never send them. That is the pad, not the plugin.</td></tr>
+        <tr><td>The <code>guide</code> button does nothing</td>
+            <td>macOS intercepts it for the Game Overlay before any program can see it. Use <code>back</code> as your prefix instead.</td></tr>
+        <tr><td>Arrow keys and scrolling do nothing</td>
+            <td>Accessibility permission is missing, or went to the wrong app. It must be the terminal that started the daemon.</td></tr>
+        <tr><td>The daemon refuses to start, naming a binding</td>
+            <td>Working as intended &mdash; something in the prefix layer cannot live there. The message names it; move it to the base layer.</td></tr>
+        <tr><td>Buttons fire on their own</td>
+            <td>Raise <code>deadzone</code>.</td></tr>
+        <tr><td>Several pads plugged in, the wrong one wins</td>
+            <td>Pin one with <code>vendor</code>/<code>product</code> under <code>[gamepad]</code>; find the values with <code>gamepad.status</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="advanced">8 &middot; Beyond the one-liner form</h3>
+    <p>
+      Herdr has 85 socket methods (<code>herdr api schema --json</code>). Anything the
+      one-liner form cannot express goes here. In <code>params</code>,
+      <code>"$focused"</code> becomes the pane that currently has focus.
+    </p>
+    <pre>[[bind]]
+button = "x"
+hold   = "lb"
+method = "pane.split"
+params = { direction = "right", ratio = 0.5 }</pre>
+  </div>
+</section>
+
+<section class="section" id="why">
+  <div class="container">
+    <h2>Rationale</h2>
+    <p class="subtitle">Why the design is the way it is, including the parts that look odd.</p>
+
+    <h3>Why a gamepad at all</h3>
+    <p>
+      Herdr's job is watching several AI agents work. That is not typing &mdash; it is
+      <em>waiting</em>, then glancing, then nudging. The keyboard is the wrong shape for
+      it: you sit up, find the home row and hit a chord to answer a question that took one
+      glance to understand. A controller is the right shape for supervision. Two thumbs,
+      no home row, no posture. You can cycle agents from across the room.
+    </p>
+
+    <h3>Why send your keybinding instead of calling the API</h3>
+    <p>
+      Every <code>[herdr]</code> binding resolves through <em>your</em>
+      <code>config.toml</code> and is sent as that key. Calling the socket method directly
+      would have been easier &mdash; but then the pad and the keyboard would slowly drift
+      apart, and Herdr's own ordering logic (which agent counts as "next") would be
+      reimplemented here, badly. Going through the keybinding means there is exactly one
+      definition of what <code>next_agent</code> means, and rebinding Herdr updates the pad
+      for free.
+    </p>
+    <p>
+      Only genuinely new behaviour earns a built-in: <code>agent_next_waiting</code>,
+      <code>agent_back</code>, <code>agent_overview</code>, <code>agent_read</code>. Those
+      need state or more than one API call, so TOML alone cannot express them.
+    </p>
+
+    <h3>Why the prefix layer is Herdr's real prefix mode</h3>
+    <p>
+      A gamepad has about ten reachable buttons and Herdr has far more than ten commands,
+      so a second layer is not optional. The obvious implementation is to fake it: hold a
+      button, and the plugin quietly sends whatever chord the action needs.
+    </p>
+    <p>
+      That version was worse. Faking it means Herdr never knows a mode is armed, so it
+      cannot show you &mdash; and a modal interface you cannot see is a modal interface you
+      will lose track of. So the pad's prefix button sends <code>ctrl+a</code> for real,
+      the instant your thumb lands. Herdr enters prefix mode, indicator and all, and the
+      second press is an ordinary key.
+    </p>
+    <p>
+      The cost is a genuine constraint rather than a bug: prefix mode eats the next key, so
+      the layer can only hold actions Herdr reaches through the prefix. Rather than let
+      that fail silently at 3am, the daemon refuses to start and names the binding.
+      Constraints you learn about at startup are cheaper than constraints you learn about
+      by pressing a button that does nothing.
+    </p>
+
+    <h3>Why tapping works as well as holding</h3>
+    <p>
+      Holding a shoulder button while reaching a face button is a stretch on small pads and
+      impossible one-handed. Tap-to-arm makes the layer reachable with one thumb. The risk
+      of any modal is being stuck in it, so: tapping the armed prefix again backs out, and
+      anything else spends it. A stray tap costs one button.
+    </p>
+
+    <h3>Why not the guide button</h3>
+    <p>
+      It is the obvious prefix &mdash; big, central, unused by anything else. macOS
+      intercepts it for the Game Overlay before any program sees it. <code>back</code> is
+      the next best thing, and is left unbound as an action for exactly this reason.
+    </p>
+
+    <h3>Why Swift, and why one binary</h3>
+    <p>
+      Reading a controller on macOS means IOHIDManager; synthesising input means CGEvent.
+      Both are system frameworks. Swift ships with the Xcode command line tools, so
+      <code>build.sh</code> is one <code>swiftc</code> call and the result is a single file
+      with no runtime, no <code>node_modules</code>, and nothing to keep up to date. A
+      plugin that breaks when its dependencies move is a plugin you uninstall.
+    </p>
+
+    <h3>Why notifications instead of terminal output</h3>
+    <p>
+      Herdr 0.7 runs plugin actions without a TTY, so anything printed goes nowhere a human
+      will look. Every interactive flow reports through <code>notification.show</code>
+      instead. This is a workaround for one version, not a preference &mdash;
+      <code>prefix_notify</code> is off by default precisely because notifications are
+      rate-limited and hidden for the focused tab, which makes them a poor second copy of
+      state Herdr already shows.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="marketplace">
+  <div class="container">
+    <h2>Listed in the Herdr marketplace</h2>
+    <p>
+      The <a href="https://herdr.dev/docs/marketplace/">Herdr marketplace</a> index is
+      built from GitHub repository search. The <code>herdr-plugin</code> topic is the only
+      signal it uses, the index refreshes every 30 minutes, and there is no submission
+      form.
+    </p>
+    <table>
+      <thead><tr><th style="width:230px">Requirement</th><th>This repo</th></tr></thead>
+      <tbody>
+        <tr><td>Public repository</td><td><a href="https://github.com/htlin222/herdr-gamepad">htlin222/herdr-gamepad</a></td></tr>
+        <tr><td><code>herdr-plugin</code> topic</td><td>set &mdash; the index reads it from GitHub's repository search</td></tr>
+        <tr><td><code>herdr-plugin.toml</code> at the root</td><td>present, with <code>id</code>, <code>version</code> and <code>min_herdr_version</code></td></tr>
+        <tr><td>Description and topics</td><td>kept accurate; listings show GitHub's own metadata, not manifest fields</td></tr>
+      </tbody>
+    </table>
+    <p>Publishing your own plugin takes the same two commands:</p>
+    <div class="copy-wrap">
+      <button class="btn btn-sm" data-copy="#topics-snip">Copy</button>
+      <pre id="topics-snip">gh repo edit --add-topic herdr-plugin --add-topic herdr --add-topic gamepad
+gh repo edit --description "Drive Herdr with a game controller."</pre>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p style="margin:0">
+      <a href="https://github.com/htlin222/herdr-gamepad">herdr-gamepad</a> &middot; MIT
+      &middot; built for <a href="https://herdr.dev">Herdr</a>
+      &middot; <a href="https://herdr.dev/docs/marketplace/">marketplace</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ── theme ─────────────────────────────────────────────────────────── */
+(function(){
+  const root = document.documentElement;
+  const saved = localStorage.getItem('color-mode');
+  if (saved) root.setAttribute('data-color-mode', saved);
+  document.getElementById('theme-toggle').addEventListener('click', e => {
+    e.preventDefault();
+    const now = root.getAttribute('data-color-mode');
+    const next = now === 'dark' ? 'light' : now === 'light' ? 'auto' : 'dark';
+    root.setAttribute('data-color-mode', next);
+    localStorage.setItem('color-mode', next);
+  });
+})();
+
+/* ── copy buttons ──────────────────────────────────────────────────── */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-copy]');
+  if (!btn) return;
+  const text = document.querySelector(btn.dataset.copy).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const was = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => btn.textContent = was, 1400);
+  });
+});
+
+/* ══ configurator ══════════════════════════════════════════════════ */
+
+/* Herdr actions. `pfx` says whether Herdr's own default binding goes through
+   the prefix, which is what decides whether the pad may put it in the prefix
+   layer:  true = yes,  false = no,  null = no documented default, so it
+   depends on your config.toml. */
+const ACTIONS = [
+  {group:'Agents', block:'herdr', items:[
+    {id:'next_agent',     pfx:false, note:'shift+down'},
+    {id:'previous_agent', pfx:false, note:'shift+up'},
+    {id:'focus_agent',    pfx:null},
+    {id:'agents',         pfx:null, note:'agent panel'},
+    {id:'goto',           pfx:true,  note:'session navigator'},
+  ]},
+  {group:'Agents — added by this plugin', block:'builtin', items:[
+    {id:'agent_next_waiting',     note:'jump to an agent that stopped for you'},
+    {id:'agent_previous_waiting'},
+    {id:'agent_back',             note:'return to the agent you came from'},
+    {id:'agent_overview',         note:'notification: how is everything doing'},
+    {id:'agent_read',             note:'notification: last output of the focused agent'},
+  ]},
+  {group:'Tabs', block:'herdr', items:[
+    {id:'next_tab', pfx:true}, {id:'previous_tab', pfx:true}, {id:'new_tab', pfx:true},
+    {id:'close_tab', pfx:null}, {id:'rename_tab', pfx:null},
+    {id:'switch_tab', pfx:null}, {id:'tabs', pfx:null},
+  ]},
+  {group:'Workspaces', block:'herdr', items:[
+    {id:'next_workspace', pfx:true}, {id:'previous_workspace', pfx:true},
+    {id:'new_workspace', pfx:true}, {id:'close_workspace', pfx:null},
+    {id:'rename_workspace', pfx:null}, {id:'switch_workspace', pfx:null},
+    {id:'workspace_picker', pfx:null}, {id:'workspaces', pfx:null},
+    {id:'navigate_workspace_up', pfx:null}, {id:'navigate_workspace_down', pfx:null},
+  ]},
+  {group:'Panes', block:'herdr', items:[
+    {id:'focus_pane_left', pfx:true}, {id:'focus_pane_right', pfx:true},
+    {id:'focus_pane_up', pfx:true}, {id:'focus_pane_down', pfx:true},
+    {id:'zoom', pfx:true}, {id:'split_vertical', pfx:true},
+    {id:'split_horizontal', pfx:true}, {id:'close_pane', pfx:true},
+    {id:'last_pane', pfx:true}, {id:'cycle_pane_next', pfx:null},
+    {id:'cycle_pane_previous', pfx:null}, {id:'rename_pane', pfx:null},
+    {id:'resize_mode', pfx:null}, {id:'navigate_pane_up', pfx:null},
+    {id:'navigate_pane_down', pfx:null}, {id:'navigate_pane_left', pfx:null},
+    {id:'navigate_pane_right', pfx:null},
+  ]},
+  {group:'Worktrees', block:'herdr', items:[
+    {id:'new_worktree', pfx:null}, {id:'open_worktree', pfx:null},
+    {id:'remove_worktree', pfx:null},
+  ]},
+  {group:'Everything else', block:'herdr', items:[
+    {id:'toggle_sidebar', pfx:true}, {id:'detach', pfx:true},
+    {id:'help', pfx:null}, {id:'settings', pfx:null},
+    {id:'reload_config', pfx:null}, {id:'edit_scrollback', pfx:null},
+    {id:'open_notification_target', pfx:null}, {id:'remote_image_paste', pfx:null},
+  ]},
+  {group:'Keyboard and mouse — sent to whatever has focus', block:'input', items:[
+    {id:'return'}, {id:'escape'}, {id:'space'}, {id:'tab'}, {id:'delete'},
+    {id:'up'}, {id:'down'}, {id:'left'}, {id:'right'},
+    {id:'pageup'}, {id:'pagedown'}, {id:'home'}, {id:'end'},
+    {id:'ctrl+c'}, {id:'ctrl+d'},
+    {id:'scroll_up',   note:'real mouse wheel'},
+    {id:'scroll_down', note:'real mouse wheel'},
+  ]},
+];
+
+const META = {};
+ACTIONS.forEach(g => g.items.forEach(it => {
+  META[it.id] = {block: it.block || g.block, pfx: it.pfx, note: it.note};
+}));
+
+const INPUTS = [
+  {group:'Face buttons', rows:[
+    {id:'a', note:'down'}, {id:'b', note:'right'},
+    {id:'x', note:'left'}, {id:'y', note:'up'},
+  ]},
+  {group:'Shoulders and triggers', rows:[
+    {id:'lb'}, {id:'rb'}, {id:'lt', note:'analog'}, {id:'rt', note:'analog'},
+  ]},
+  {group:'Centre buttons and stick clicks', rows:[
+    {id:'back'}, {id:'start'}, {id:'guide', note:'macOS eats this'},
+    {id:'l3', note:'many pads never send it'}, {id:'r3', note:'many pads never send it'},
+  ]},
+  {group:'D-pad', rows:[
+    {id:'dpad_up'}, {id:'dpad_down'}, {id:'dpad_left'}, {id:'dpad_right'},
+  ]},
+  {group:'Left stick', rows:[
+    {id:'left_up'}, {id:'left_down'}, {id:'left_left'}, {id:'left_right'},
+  ]},
+  {group:'Right stick', rows:[
+    {id:'right_up'}, {id:'right_down'}, {id:'right_left'}, {id:'right_right'},
+  ]},
+];
+
+const ALL_INPUTS = INPUTS.flatMap(g => g.rows.map(r => r.id));
+const NOTE_OF = {};
+INPUTS.forEach(g => g.rows.forEach(r => { if (r.note) NOTE_OF[r.id] = r.note; }));
+
+/* hold must be a button: sticks and triggers cannot be held as a prefix */
+const HOLDABLE = ['a','b','x','y','lb','rb','back','start','guide','l3','r3'];
+
+/* what ships in config/gamepad.toml */
+const DEFAULTS = {
+  prefix: 'back',
+  base: {
+    rt:'next_agent', lt:'previous_agent', y:'goto',
+    rb:'next_tab',   lb:'previous_tab',   start:'next_workspace',
+    dpad_left:'focus_pane_left', dpad_right:'focus_pane_right',
+    dpad_up:'focus_pane_up',     dpad_down:'focus_pane_down',
+    a:'return', x:'escape', b:'space',
+    right_up:'up', right_down:'down', right_left:'left', right_right:'right',
+    left_up:'scroll_up', left_down:'scroll_down',
+  },
+  pre: {
+    rb:'new_tab', start:'previous_workspace',
+    a:'zoom', b:'split_vertical', y:'split_horizontal', x:'last_pane',
+    lb:'toggle_sidebar', rt:'help', lt:'settings',
+  },
+  rep: ['right_up','right_down','right_left','right_right','left_up','left_down'],
+};
+
+let state = null;
+function loadState(src){
+  state = {prefix: src.prefix, base: {...src.base}, pre: {...src.pre}, rep: new Set(src.rep)};
+}
+
+function optionsFor(layer){
+  const frag = document.createDocumentFragment();
+  frag.appendChild(new Option('— none —', ''));
+  for (const g of ACTIONS){
+    const og = document.createElement('optgroup');
+    og.label = g.group;
+    let any = false;
+    for (const it of g.items){
+      const m = META[it.id];
+      if (layer === 'pre'){
+        if (m.block !== 'herdr') continue;   // built-ins and keystrokes cannot live here
+        if (m.pfx === false) continue;       // Herdr binds it without the prefix
+      }
+      any = true;
+      const suffix = (layer === 'pre' && m.pfx === null)
+        ? '   ⚠ bind prefix+… first'
+        : (m.note ? '   — ' + m.note : '');
+      og.appendChild(new Option(it.id + suffix, it.id));
+    }
+    if (any) frag.appendChild(og);
+  }
+  return frag;
+}
+
+function buildTable(){
+  const body = document.getElementById('map-body');
+  body.textContent = '';
+  for (const g of INPUTS){
+    const gr = body.insertRow();
+    gr.className = 'group';
+    const gc = gr.insertCell(); gc.colSpan = 4; gc.textContent = g.group;
+    for (const r of g.rows){
+      const tr = body.insertRow();
+      tr.id = 'row-' + r.id;
+      const c0 = tr.insertCell();
+      const code = document.createElement('code');
+      code.textContent = r.id;
+      c0.appendChild(code);
+      const note = document.createElement('div');
+      note.className = 'row-note';
+      note.style.cssText = 'font-size:11px;color:var(--fgColor-muted)';
+      c0.appendChild(note);
+
+      const sBase = document.createElement('select');
+      sBase.appendChild(optionsFor('base'));
+      sBase.dataset.input = r.id; sBase.dataset.layer = 'base';
+      tr.insertCell().appendChild(sBase);
+
+      const sPre = document.createElement('select');
+      sPre.appendChild(optionsFor('pre'));
+      sPre.dataset.input = r.id; sPre.dataset.layer = 'pre';
+      tr.insertCell().appendChild(sPre);
+
+      const rep = document.createElement('input');
+      rep.type = 'checkbox'; rep.dataset.input = r.id; rep.dataset.layer = 'rep';
+      rep.title = 'Auto-repeat while held';
+      const c3 = tr.insertCell(); c3.style.textAlign = 'center'; c3.appendChild(rep);
+    }
+  }
+  const pb = document.getElementById('prefix-btn');
+  pb.textContent = '';
+  pb.appendChild(new Option('— none, layer off —', ''));
+  HOLDABLE.forEach(b => pb.appendChild(new Option(b, b)));
+}
+
+function syncUI(){
+  document.getElementById('prefix-btn').value = state.prefix || '';
+  for (const id of ALL_INPUTS){
+    const row = document.getElementById('row-' + id);
+    const [sBase, sPre] = row.querySelectorAll('select');
+    const rep = row.querySelector('input[type=checkbox]');
+    const note = row.querySelector('.row-note');
+    const isPrefix = id === state.prefix;
+
+    sBase.value = isPrefix ? '' : (state.base[id] || '');
+    sPre.value  = isPrefix ? '' : (state.pre[id]  || '');
+    rep.checked = !isPrefix && state.rep.has(id);
+
+    sBase.disabled = isPrefix;
+    sPre.disabled  = isPrefix || !state.prefix;
+    rep.disabled   = isPrefix;
+    row.style.opacity = isPrefix ? .55 : 1;
+
+    if (isPrefix){
+      note.textContent = '◆ prefix button';
+      note.style.color = 'var(--fgColor-done)';
+    } else {
+      note.textContent = NOTE_OF[id] || '';
+      note.style.color = 'var(--fgColor-muted)';
+    }
+  }
+  render();
+}
+
+/* ── TOML ──────────────────────────────────────────────────────────── */
+function entryString(e){
+  if (!e.hold && !e.rep) return '"' + e.input + '"';
+  const parts = ['input = "' + e.input + '"'];
+  if (e.hold) parts.push('hold = "' + e.hold + '"');
+  if (e.rep)  parts.push('repeat = true');
+  return '{ ' + parts.join(', ') + ' }';
+}
+
+function render(){
+  const herdr = new Map(), input = new Map();
+  const add = (action, entry) => {
+    const m = META[action];
+    const bucket = (m && m.block === 'input') ? input : herdr;
+    if (!bucket.has(action)) bucket.set(action, []);
+    bucket.get(action).push(entry);
+  };
+
+  for (const id of ALL_INPUTS){
+    if (id === state.prefix) continue;
+    const rep = state.rep.has(id);
+    if (state.base[id]) add(state.base[id], {input:id, rep});
+    if (state.pre[id] && state.prefix) add(state.pre[id], {input:id, hold:state.prefix});
+  }
+
+  const emit = (map) => [...map.entries()].map(([action, list]) => {
+    const pad = ' '.repeat(Math.max(1, 22 - action.length));
+    if (list.length === 1) return action + pad + '= ' + entryString(list[0]);
+    return action + pad + '= [' + list.map(entryString).join(', ') + ']';
+  }).join('\n');
+
+  const out = [
+    '# Generated at https://htlin222.github.io/herdr-gamepad/',
+    '# Save as $(herdr plugin config-dir gamepad)/gamepad.toml',
+    '',
+    '[gamepad]',
+    'profile = "xbox360"   # also fits Xbox One pads and 8BitDo in X mode',
+    '',
+    '[tuning]',
+    'deadzone          = 0.25',
+    'trigger_threshold = 0.5',
+    'repeat_delay_ms   = 400',
+    'repeat_rate_ms    = 80',
+    'scroll_invert     = false',
+    'prefix_timeout_ms = 2000',
+    'prefix_notify     = false',
+    '',
+  ];
+
+  if (state.prefix){
+    out.push('# `' + state.prefix + '` is the prefix: hold it, or tap it, then press',
+             '# anything carrying `hold` below. It sends Herdr\'s real prefix (ctrl+a),',
+             '# so Herdr shows the mode. A prefix button does nothing on its own.');
+  }
+  out.push('[herdr]', herdr.size ? emit(herdr) : '# nothing bound yet', '');
+  out.push('[input]   # needs Accessibility permission',
+           input.size ? emit(input) : '# nothing bound yet');
+
+  document.getElementById('toml-out').textContent = out.join('\n');
+  renderWarnings();
+}
+
+function renderWarnings(){
+  const w = [];
+  if (!state.prefix){
+    w.push(['warn', 'No prefix button chosen, so the prefix layer is off. A pad has about ' +
+                    'ten reachable buttons; Herdr has many more commands.']);
+  }
+  const soft = new Set();
+  for (const id of ALL_INPUTS){
+    const a = state.pre[id];
+    if (a && META[a] && META[a].pfx === null) soft.add(a);
+  }
+  if (soft.size){
+    w.push(['warn', 'These sit in the prefix layer, but Herdr ships no documented default ' +
+      'for them: ' + [...soft].map(s => '<code>' + s + '</code>').join(', ') +
+      '. Bind each as <code>prefix+…</code> in your <code>config.toml</code>, or the ' +
+      'daemon will refuse to start and name the binding.']);
+  }
+  const seen = {};
+  for (const id of ALL_INPUTS){
+    for (const layer of ['base','pre']){
+      const a = state[layer][id];
+      if (!a) continue;
+      const k = layer + ':' + a;
+      (seen[k] = seen[k] || []).push(id);
+    }
+  }
+  const dup = Object.entries(seen).filter(([,v]) => v.length > 1);
+  if (dup.length){
+    w.push(['ok', 'Bound to more than one input, which is fine — Herdr allows the same: ' +
+      dup.map(([k,v]) => '<code>' + k.split(':')[1] + '</code> (' + v.join(', ') + ')').join(', ') + '.']);
+  }
+  document.getElementById('warnings').innerHTML = w.map(([kind, text]) =>
+    '<div class="flash ' + (kind === 'warn' ? 'flash-warn' : '') + '">' + text + '</div>').join('');
+}
+
+document.getElementById('map-body').addEventListener('change', e => {
+  const t = e.target;
+  if (!t.dataset.input) return;
+  if (t.dataset.layer === 'rep'){
+    t.checked ? state.rep.add(t.dataset.input) : state.rep.delete(t.dataset.input);
+  } else {
+    state[t.dataset.layer][t.dataset.input] = t.value;
+  }
+  render();
+});
+document.getElementById('prefix-btn').addEventListener('change', e => {
+  state.prefix = e.target.value;
+  syncUI();
+});
+document.getElementById('reset').addEventListener('click', () => { loadState(DEFAULTS); syncUI(); });
+document.getElementById('clear').addEventListener('click', () => {
+  loadState({prefix:'back', base:{}, pre:{}, rep:[]}); syncUI();
+});
+
+/* ══ live controller ═══════════════════════════════════════════════ */
+/* W3C standard gamepad layout — the same one the plugin's names follow. */
+const BUTTONS = ['a','b','x','y','lb','rb','lt','rt','back','start',
+                 'l3','r3','dpad_up','dpad_down','dpad_left','dpad_right','guide'];
+const STICK_DIRS = ['left_up','left_down','left_left','left_right',
+                    'right_up','right_down','right_left','right_right'];
+const DEADZONE = 0.25;
+const active = new Set();
+let lastHit = 0;
+
+function setOn(name, on){
+  const el = document.getElementById('in-' + name);
+  if (el) el.classList.toggle('on', on);
+  if (on && !active.has(name)){
+    active.add(name);
+    const now = performance.now();
+    if (now - lastHit > 150){
+      lastHit = now;
+      const row = document.getElementById('row-' + name);
+      if (row){
+        document.querySelectorAll('table.map tr.hit').forEach(r => r.classList.remove('hit'));
+        row.classList.add('hit');
+        row.scrollIntoView({block:'center', behavior:'smooth'});
+        setTimeout(() => row.classList.remove('hit'), 1000);
+      }
+    }
+  } else if (!on){
+    active.delete(name);
+  }
+}
+
+function poll(){
+  const pads = [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(Boolean);
+  document.getElementById('pad-count').textContent = pads.length + ' connected';
+  document.getElementById('pad-dot').classList.toggle('live', pads.length > 0);
+  const nameEl = document.getElementById('pad-name');
+  const gp = pads[0];
+
+  if (!gp){
+    nameEl.textContent = 'No controller detected — plug one in and press a button.';
+    BUTTONS.concat(STICK_DIRS).forEach(n => setOn(n, false));
+    ['stick-left','stick-right'].forEach(id => {
+      const g = document.getElementById(id);
+      if (g) g.style.transform = '';
+    });
+    requestAnimationFrame(poll);
+    return;
+  }
+  nameEl.textContent = gp.id;
+
+  BUTTONS.forEach((name, i) => {
+    const b = gp.buttons[i];
+    if (!b) return;
+    // triggers are analog: honour the same threshold the plugin uses
+    const on = (name === 'lt' || name === 'rt') ? b.value > 0.5 : b.pressed;
+    setOn(name, on);
+  });
+
+  const ax = gp.axes;
+  const stick = (sx, sy, side, gid) => {
+    const x = ax[sx] || 0, y = ax[sy] || 0;
+    setOn(side + '_left',  x < -DEADZONE);
+    setOn(side + '_right', x >  DEADZONE);
+    setOn(side + '_up',    y < -DEADZONE);
+    setOn(side + '_down',  y >  DEADZONE);
+    const g = document.getElementById(gid);
+    if (g) g.style.transform =
+      'translate(' + (x * 13).toFixed(1) + 'px,' + (y * 13).toFixed(1) + 'px)';
+  };
+  stick(0, 1, 'left',  'stick-left');
+  stick(2, 3, 'right', 'stick-right');
+
+  requestAnimationFrame(poll);
+}
+
+buildTable();
+loadState(DEFAULTS);
+syncUI();
+requestAnimationFrame(poll);
+</script>
+</body>
+</html>

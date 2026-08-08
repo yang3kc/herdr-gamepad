@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 910" width="1600" height="910" font-family="-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<defs>
+  <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3d4653"/><stop offset=".55" stop-color="#2a323d"/>
+    <stop offset="1" stop-color="#191f27"/>
+  </linearGradient>
+  <linearGradient id="ctrl" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#454f5d"/><stop offset="1" stop-color="#2b333e"/>
+  </linearGradient>
+  <linearGradient id="trig" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3c4552"/><stop offset="1" stop-color="#252d38"/>
+  </linearGradient>
+  <radialGradient id="sheen" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#6d7b8e" stop-opacity=".45"/>
+    <stop offset="1" stop-color="#6d7b8e" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="cap" cx="0.4" cy="0.3" r="0.85">
+    <stop offset="0" stop-color="#4e5866"/><stop offset="1" stop-color="#262e39"/>
+  </radialGradient>
+  <filter id="shadow" x="-30%" y="-40%" width="160%" height="200%">
+    <feGaussianBlur stdDeviation="24"/>
+  </filter>
+  <style>
+    .cap   { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:16px; font-weight:700; fill:#e6edf3; letter-spacing:.6px; text-anchor:middle; }
+    .base  { font-size:18.5px; }
+    .pre   { font-size:16.5px; fill:#d2a8ff; }
+    .end   { text-anchor:end; }
+    .h1    { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:30px; font-weight:700; fill:#e6edf3; letter-spacing:.5px; }
+    .h2    { font-size:17px; fill:#8b949e; }
+    .glyph { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:20px; font-weight:700; text-anchor:middle; }
+    .lg    { font-size:16.5px; fill:#8b949e; }
+    .note  { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:14px; fill:#6e7b8b; }
+    .eng   { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; fill:#7c8896; text-anchor:middle; letter-spacing:.4px; }
+  </style>
+</defs>
+<rect width="1600" height="910" fill="#0d1117"/>
+<text x="60" y="74" class="h1">herdr-gamepad</text>
+<text x="60" y="104" class="h2">every binding lives in config/gamepad.toml</text>
+<rect x="470" y="92" width="322" height="90" rx="14" fill="#1a1526" stroke="#d2a8ff" stroke-width="1.6"/>
+<rect x="494.0" y="108" width="59.6" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="523.8" y="128" class="cap">BACK</text>
+<text x="567.6" y="128" class="base" fill="#d2a8ff" font-weight="700">PREFIX</text>
+<text x="494" y="162" class="lg" fill="#c4b2dc">hold it, or tap it — then press any ◆</text>
+<path d="M 748,382 L 760,182" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="748" cy="382" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="830.0" y="110" width="69.5" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="864.8" y="130" class="cap">START</text><text x="913.5" y="130" class="base" fill="#e6edf3">next workspace</text><path d="M 919.5,147 L 924.5,152 L 919.5,157 L 914.5,152 Z" fill="#d2a8ff"/><text x="933.5" y="157" class="pre">previous workspace</text>
+<path d="M 852,382 L 814,124" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="852" cy="382" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<ellipse cx="800" cy="722" rx="320" ry="30" fill="#000000" opacity=".7" filter="url(#shadow)"/>
+<rect x="634" y="244" width="92" height="48" rx="18" fill="url(#trig)" stroke="#586372" stroke-width="1.6"/>
+<rect x="874" y="244" width="92" height="48" rx="18" fill="url(#trig)" stroke="#586372" stroke-width="1.6"/>
+<rect x="620" y="290" width="120" height="46" rx="20" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+<rect x="860" y="290" width="120" height="46" rx="20" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+<path d="M 800,308 C 742,300 674,302 620,322 C 546,350 476,398 464,472 C 452,540 466,616 498,670 C 530,722 592,726 622,682 C 650,646 664,616 680,600 C 710,576 750,566 800,566 C 850,566 890,576 920,600 C 936,616 950,646 978,682 C 1008,726 1070,722 1102,670 C 1134,616 1148,540 1136,472 C 1124,398 1054,350 980,322 C 926,302 858,300 800,308 Z" fill="url(#body)" stroke="#4b5666" stroke-width="2.2"/>
+<ellipse cx="800" cy="380" rx="300" ry="95" fill="url(#sheen)" opacity=".5"/>
+<path d="M 800,308 C 742,300 674,302 620,322" fill="none" stroke="#5f6c7e" stroke-width="2" opacity=".55"/>
+<path d="M 800,308 C 858,300 926,302 980,322" fill="none" stroke="#5f6c7e" stroke-width="2" opacity=".55"/>
+
+  <circle cx="662" cy="396" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+  <circle cx="662" cy="396" r="31" fill="url(#cap)" stroke="#586372" stroke-width="1.6"/>
+  <circle cx="662" cy="396" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/>
+
+  <circle cx="742" cy="500" r="42" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+  <path d="M 729.5,465 L 754.5,465 L 754.5,487.5 L 777,487.5 L 777,512.5 L 754.5,512.5 L 754.5,535 L 729.5,535 L 729.5,512.5 L 707,512.5 L 707,487.5 L 729.5,487.5 Z" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6" stroke-linejoin="round"/>
+
+  <circle cx="872" cy="500" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+  <circle cx="872" cy="500" r="31" fill="url(#cap)" stroke="#586372" stroke-width="1.6"/>
+  <circle cx="872" cy="500" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/>
+
+  <circle cx="972" cy="359" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="972" y="366" class="glyph" fill="#e3b341">Y</text>
+
+  <circle cx="1023" cy="410" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="1023" y="417" class="glyph" fill="#ff9492">B</text>
+
+  <circle cx="972" cy="461" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="972" y="468" class="glyph" fill="#7ee787">A</text>
+
+  <circle cx="921" cy="410" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="921" y="417" class="glyph" fill="#79c0ff">X</text>
+<circle cx="800" cy="348" r="17" fill="#12171e" stroke="#333c4a" stroke-width="1.6"/>
+<circle cx="800" cy="348" r="8" fill="none" stroke="#2b3340" stroke-width="1.4"/>
+<rect x="729" y="371" width="38" height="22" rx="11" fill="url(#ctrl)" stroke="#586372" stroke-width="1.4"/>
+<text x="748" y="410" class="eng">back</text>
+<rect x="833" y="371" width="38" height="22" rx="11" fill="url(#ctrl)" stroke="#586372" stroke-width="1.4"/>
+<text x="852" y="410" class="eng">start</text>
+<path d="M 634,268 L 406,238" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="634" cy="268" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="346.0" y="224" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="368.0" y="244" class="cap">LT</text><text x="332.0" y="244" class="base end" fill="#e6edf3">previous agent</text><text x="332.0" y="271" class="pre end">settings</text><path d="M 253.6,261 L 258.6,266 L 253.6,271 L 248.6,266 Z" fill="#d2a8ff"/>
+<path d="M 622,308 L 406,350" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="622" cy="308" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="346.0" y="336" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="368.0" y="356" class="cap">LB</text><text x="332.0" y="356" class="base end" fill="#e6edf3">previous tab</text><text x="332.0" y="383" class="pre end">toggle sidebar</text><path d="M 205.3,373 L 210.3,378 L 205.3,383 L 200.3,378 Z" fill="#d2a8ff"/>
+<path d="M 662,396 L 406,466" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="662" cy="396" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="300.7" y="452" width="89.3" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="345.3" y="472" class="cap">L STICK</text><text x="286.7" y="472" class="base end" fill="#ffa657">scroll  ↑ ↓</text>
+<path d="M 742,500 L 406,570" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="742" cy="500" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="320.5" y="556" width="69.5" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="355.2" y="576" class="cap">D-PAD</text><text x="306.5" y="576" class="base end" fill="#e6edf3">focus pane  ← ↑ ↓ →</text>
+<path d="M 966,268 L 1194,204" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="966" cy="268" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="1210.0" y="190" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1232.0" y="210" class="cap">RT</text><text x="1268.0" y="210" class="base" fill="#e6edf3">next agent</text><path d="M 1274.0,227 L 1279.0,232 L 1274.0,237 L 1269.0,232 Z" fill="#d2a8ff"/><text x="1288.0" y="237" class="pre">help</text>
+<path d="M 978,308 L 1194,316" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="978" cy="308" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="1210.0" y="302" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1232.0" y="322" class="cap">RB</text><text x="1268.0" y="322" class="base" fill="#e6edf3">next tab</text><path d="M 1274.0,339 L 1279.0,344 L 1274.0,349 L 1269.0,344 Z" fill="#d2a8ff"/><text x="1288.0" y="349" class="pre">new tab</text>
+<path d="M 872,500 L 1194,700" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="872" cy="500" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="1210.0" y="686" width="89.3" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1254.7" y="706" class="cap">R STICK</text><text x="1313.3" y="706" class="base" fill="#ffa657">arrow keys  ↑ ↓ ← →</text>
+<path d="M 1048,410 L 1194,434" stroke="#3d4756" stroke-width="1.4" fill="none"/><circle cx="1048" cy="410" r="3.6" fill="#1a212b" stroke="#6b7787" stroke-width="1.5"/>
+<rect x="1210.0" y="420" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1232.0" y="440" class="cap">Y</text><text x="1268.0" y="440" class="base" fill="#e6edf3">goto — session picker</text><path d="M 1274.0,457 L 1279.0,462 L 1274.0,467 L 1269.0,462 Z" fill="#d2a8ff"/><text x="1288.0" y="467" class="pre">split horizontal</text>
+<rect x="1210.0" y="476" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1232.0" y="496" class="cap">B</text><text x="1268.0" y="496" class="base" fill="#ffa657">Space</text><path d="M 1274.0,513 L 1279.0,518 L 1274.0,523 L 1269.0,518 Z" fill="#d2a8ff"/><text x="1288.0" y="523" class="pre">split vertical</text>
+<rect x="1210.0" y="532" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1232.0" y="552" class="cap">A</text><text x="1268.0" y="552" class="base" fill="#ffa657">Return</text><path d="M 1274.0,569 L 1279.0,574 L 1274.0,579 L 1269.0,574 Z" fill="#d2a8ff"/><text x="1288.0" y="579" class="pre">zoom</text>
+<rect x="1210.0" y="588" width="44.0" height="29" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/><text x="1232.0" y="608" class="cap">X</text><text x="1268.0" y="608" class="base" fill="#ffa657">Escape</text><path d="M 1274.0,625 L 1279.0,630 L 1274.0,635 L 1269.0,630 Z" fill="#d2a8ff"/><text x="1288.0" y="635" class="pre">last pane</text>
+<path d="M 60,764 L 1540,764" stroke="#212831" stroke-width="1.4"/>
+<path d="M 68.0,786 L 73.0,791 L 68.0,796 L 63.0,791 Z" fill="#d2a8ff"/>
+<text x="88" y="796" class="lg"><tspan fill="#d2a8ff">prefix layer</tspan> — hold or tap BACK first. It really is Herdr’s prefix mode, so Herdr shows it.</text>
+<rect x="62" y="817" width="12" height="12" rx="3" fill="#ffa657"/>
+<text x="88" y="828" class="lg"><tspan fill="#ffa657">synthetic input</tspan> — real key and wheel events, sent to whatever has focus. Needs Accessibility.</text>
+<rect x="62" y="849" width="12" height="12" rx="3" fill="#e6edf3"/>
+<text x="88" y="860" class="lg"><tspan fill="#e6edf3">Herdr action</tspan> — sent as your own keybinding for it, so rebinding Herdr follows along.</text>
+<text x="1540" y="796" class="note end">guide is eaten by the macOS Game Overlay — left unbound</text>
+<text x="1540" y="828" class="note end">profile = xbox360 · also fits Xbox One and 8BitDo in X mode</text>
+<text x="1540" y="860" class="note end">herdr plugin action invoke gamepad.learn — name any button</text>
+</svg>
