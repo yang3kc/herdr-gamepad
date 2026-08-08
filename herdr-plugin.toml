@@ -1,0 +1,53 @@
+id = "gamepad"
+name = "Gamepad"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Drive Herdr with a game controller. Patrol your AI agents, split panes, and switch workspaces from the couch — any gamepad, mapped by you in 60 seconds."
+platforms = ["macos"]
+
+# Build a single dependency-free binary. Swift ships with macOS developer tools,
+# so there is nothing to `npm install` and no native module to compile.
+[[build]]
+command = ["bash", "build.sh"]
+
+# ─────────────────────────────────────────────────────────────────────
+# Actions
+#
+# NOTE: herdr 0.7 does NOT bind keys declared in a plugin manifest, and
+# actions run WITHOUT a TTY. That is why every interactive flow here
+# reports through `notification.show` instead of printing to a terminal.
+# To bind a key, add this to ~/.config/herdr/config.toml:
+#
+#   [[keys.command]]
+#   key = "prefix+g"
+#   type = "plugin_action"
+#   command = "gamepad.learn"
+#   description = "Gamepad learn mode"
+#
+# then run `herdr server reload-config`.
+# ─────────────────────────────────────────────────────────────────────
+
+[[actions]]
+id = "setup"
+title = "Gamepad: set up my controller (guided)"
+command = ["bin/herdr-gamepad", "setup"]
+
+[[actions]]
+id = "learn"
+title = "Gamepad: learn mode (show button IDs as I press)"
+command = ["bin/herdr-gamepad", "learn"]
+
+[[actions]]
+id = "start"
+title = "Gamepad: start daemon"
+command = ["bash", "start.sh"]
+
+[[actions]]
+id = "stop"
+title = "Gamepad: stop daemon"
+command = ["bash", "stop.sh"]
+
+[[actions]]
+id = "status"
+title = "Gamepad: status"
+command = ["bin/herdr-gamepad", "status"]

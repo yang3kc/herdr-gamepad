@@ -1,0 +1,248 @@
+#  ╭──────────────────────────────────────────────────────────────────────╮
+#  │  herdr-gamepad — drive Herdr with a game controller                  │
+#  ╰──────────────────────────────────────────────────────────────────────╯
+#
+#  Bindings live in two blocks, split by who is being talked to:
+#
+#      [herdr]   operations on Herdr      next_tab, zoom, jump to an agent
+#      [input]   pretend to be a keyboard/mouse    arrow keys, enter, scroll
+#
+#  Both have the same shape, and it is the same shape as Herdr's own [keys]:
+#
+#      ~/.config/herdr/config.toml        this file
+#      next_tab = "shift+right"           next_tab = "rb"
+#
+#  Everything in [herdr] is sent as YOUR keybinding for it, so the controller
+#  behaves exactly like the keyboard. Rebind Herdr and this follows along —
+#  nothing to update here.
+#
+#  Copy this file into place:
+#      cp config/gamepad.toml "$(herdr plugin config-dir gamepad)/gamepad.toml"
+#
+#
+#  ── Controller inputs ───────────────────────────────────────────────────
+#
+#      a  b  x  y                 face buttons (a = down, b = right,
+#      lb  rb                     shoulders     x = left, y = up)
+#      lt  rt                     analog triggers
+#      back  start                little centre buttons
+#      l3  r3                     stick clicks — many pads never send these
+#      dpad_up  dpad_down  dpad_left  dpad_right
+#      guide                      big middle button, often eaten by macOS
+#
+#      left_up   left_down   left_left   left_right       sticks, per direction
+#      right_up  right_down  right_left  right_right
+#
+#  These names match the W3C standard gamepad layout that browsers report,
+#  so any online gamepad tester agrees with this file.
+#
+#  Which button is which on YOUR pad?
+#      herdr plugin action invoke gamepad.learn    press anything, see its name
+#      herdr plugin action invoke gamepad.setup    guided, writes your profile
+
+
+[gamepad]
+# Built-in translation table. Also fits Xbox One pads and 8BitDo in X mode.
+profile = "xbox360"
+
+# Pin to one controller when several are plugged in (see gamepad.status):
+# vendor  = 0x045E
+# product = 0x028E
+
+
+# ── Your controller's translation table ─────────────────────────────────
+#
+#  Only needed when NOT using a built-in profile. Left is the raw HID usage
+#  your hardware sends, right is a standard name. gamepad.setup writes it.
+#
+#  Note: many third-party pads declare l3/r3 but never send them. If a stick
+#  click does nothing, that is the pad, not this plugin.
+#
+# [profile.buttons]
+# 1 = "a"
+# 2 = "b"
+#
+# [profile.axes]
+# X  = "left_x"    # sticks rest centred, signed range
+# Z  = "lt"        # triggers rest at one end, 0…255
+
+
+[tuning]
+deadzone          = 0.25   # how far a stick moves before it counts (0–1)
+                           # raise it if things trigger on their own
+trigger_threshold = 0.5    # how far lt/rt must be squeezed to count
+repeat_delay_ms   = 400    # hold this long before auto-repeat starts
+repeat_rate_ms    = 80     # then repeat this often
+scroll_invert     = false  # flip scroll direction — depends on your macOS
+                           # "natural scrolling" setting, so no right default
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  [herdr] — operations on Herdr
+#
+#      behaviour = "controller input"
+#
+#  Bind several inputs to one behaviour with a list, exactly like Herdr:
+#      focus_pane_left = ["dpad_left", "left_left"]
+#
+#  Auto-repeat while held:
+#      focus_pane_down = { input = "dpad_down", repeat = true }
+#
+#  A PREFIX LAYER — hold one button to give every other input a second
+#  meaning, the way tmux's prefix key works:
+#
+#      split_vertical = { input = "x", hold = "lb" }   # lb THEN x
+#
+#  This is better than using the guide button, which macOS intercepts for
+#  its Game Overlay before any program can see it.
+#
+#  Uncomment anything you want — the full list of what Herdr can do is here.
+# ═══════════════════════════════════════════════════════════════════════
+
+[herdr]
+
+# ── Agents ──────────────────────────────────────────────────────────────
+next_agent             = "rt"
+previous_agent         = "lt"
+# focus_agent          = ""
+# agents               = ""      # open the agent panel
+
+goto                   = "y"     # session navigator (prefix+g)
+
+# Not in Herdr — this plugin adds these. Inputs still free: guide,
+# left_left, left_right, l3, r3 (l3/r3 do not work on many pads).
+# agent_next_waiting   = ""      # jump to an agent that stopped for you
+# agent_previous_waiting = ""
+# agent_back           = ""      # return to the agent you came from
+# agent_overview       = ""      # notification: how is everything doing
+# agent_read           = ""      # notification: focused agent's last output
+
+# ── Tabs ────────────────────────────────────────────────────────────────
+next_tab               = "rb"
+previous_tab           = "lb"
+# new_tab              = ""
+# close_tab            = ""
+# rename_tab           = ""
+# switch_tab           = ""
+# tabs                 = ""
+
+# ── Workspaces ──────────────────────────────────────────────────────────
+#
+#  `back` is left unbound on purpose: it is the prefix. Holding it gives
+#  every other input a second meaning, and because nothing is bound to it
+#  directly, pressing it never does anything on its own.
+#
+next_workspace         = "start"
+previous_workspace     = { input = "start", hold = "back" }
+# new_workspace        = ""
+# close_workspace      = ""
+# rename_workspace     = ""
+# switch_workspace     = ""
+# workspace_picker     = ""
+# workspaces           = ""
+# navigate_workspace_up   = ""
+# navigate_workspace_down = ""
+
+# ── Panes ───────────────────────────────────────────────────────────────
+focus_pane_left        = "dpad_left"
+focus_pane_right       = "dpad_right"
+focus_pane_up          = "dpad_up"
+focus_pane_down        = "dpad_down"
+
+# The prefix layer: hold `back`, then press. Destructive things live here
+# so they cannot happen by accident.
+zoom                   = { input = "a", hold = "back" }
+split_vertical         = { input = "x", hold = "back" }
+split_horizontal       = { input = "y", hold = "back" }
+close_pane             = { input = "b", hold = "back" }
+# last_pane            = ""
+# cycle_pane_next      = ""
+# cycle_pane_previous  = ""
+# rename_pane          = ""
+# resize_mode          = ""
+# navigate_pane_up     = ""
+# navigate_pane_down   = ""
+# navigate_pane_left   = ""
+# navigate_pane_right  = ""
+
+# ── Worktrees ───────────────────────────────────────────────────────────
+# new_worktree         = ""
+# open_worktree        = ""
+# remove_worktree      = ""
+
+# ── Everything else ─────────────────────────────────────────────────────
+# toggle_sidebar       = ""
+# detach               = ""
+# help                 = ""
+# settings             = ""
+# reload_config        = ""
+# edit_scrollback      = ""
+# open_notification_target = ""
+# remote_image_paste   = ""
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  [input] — pretend to be a keyboard or mouse
+#
+#  Nothing here goes through Herdr. These drive whatever program currently
+#  has focus: menus, fzf, pagers, TUIs.
+#
+#  REQUIRES ACCESSIBILITY PERMISSION — macOS will not let any process
+#  synthesise input without it:
+#
+#      System Settings → Privacy & Security → Accessibility
+#
+#  The prompt names the TERMINAL that started the daemon, not this plugin.
+#  Approve that, then restart the daemon.
+# ═══════════════════════════════════════════════════════════════════════
+
+[input]
+
+# Face buttons as the usual three. Positions: a = down, x = left, b = right.
+return = "a"
+escape = "x"
+space  = "b"
+
+# Right stick as arrow keys — navigate any TUI without the keyboard.
+up    = { input = "right_up",    repeat = true }
+down  = { input = "right_down",  repeat = true }
+left  = { input = "right_left",  repeat = true }
+right = { input = "right_right", repeat = true }
+
+# Left stick scrolls. This posts a real mouse-wheel event, which is why it
+# scrolls Herdr's scrollback — forwarding PageUp would only reach the program
+# inside the pane and does nothing at a shell prompt.
+scroll_up   = { input = "left_up",   repeat = true }
+scroll_down = { input = "left_down", repeat = true }
+
+# Any key or combination works:
+# tab      = ""
+# delete   = ""
+# pageup   = ""
+# pagedown = ""
+# home     = ""
+# end      = ""
+# "ctrl+c" = ""
+# "ctrl+d" = ""
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  ADVANCED
+#
+#  For what the one-liner form cannot express: raw socket methods with
+#  parameters, or a second layer gated behind a held button.
+#
+#  Herdr has 85 socket methods — see docs/methods.md or:
+#      herdr api schema --json
+#
+#  In params, "$focused" becomes the pane that currently has focus. Methods
+#  like pane.send_keys REQUIRE a pane_id, which nobody can hardcode.
+# ═══════════════════════════════════════════════════════════════════════
+
+# Hold lb to reach a second layer, like tmux's prefix key:
+#
+# [[bind]]
+# button = "x"
+# hold   = "lb"
+# method = "pane.split"
+# params = { direction = "right", ratio = 0.5 }
