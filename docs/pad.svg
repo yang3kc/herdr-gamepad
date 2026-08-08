@@ -18,34 +18,42 @@
     <stop offset="0" stop-color="#4e5866"/><stop offset="1" stop-color="#262e39"/>
   </radialGradient>
 </defs>
-<g class="hw"><rect id="in-lt" x="634" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="#586372" stroke-width="1.6"/>
-<rect id="in-rt" x="874" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="#586372" stroke-width="1.6"/>
-<rect id="in-lb" x="620" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
-<rect id="in-rb" x="860" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/></g>
+<rect id="in-lt" class="hw" x="634" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="#586372" stroke-width="1.6"><title>lt — left trigger, analog</title></rect>
+<rect id="in-rt" class="hw" x="874" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="#586372" stroke-width="1.6"><title>rt — right trigger, analog</title></rect>
+<rect id="in-lb" class="hw" x="620" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"><title>lb — left bumper</title></rect>
+<rect id="in-rb" class="hw" x="860" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"><title>rb — right bumper</title></rect>
 <path d="M 800,308 C 742,300 674,302 620,322 C 546,350 476,398 464,472 C 452,540 466,616 498,670 C 530,722 592,726 622,682 C 650,646 664,616 680,600 C 710,576 750,566 800,566 C 850,566 890,576 920,600 C 936,616 950,646 978,682 C 1008,726 1070,722 1102,670 C 1134,616 1148,540 1136,472 C 1124,398 1054,350 980,322 C 926,302 858,300 800,308 Z" fill="url(#pbody)" stroke="#4b5666" stroke-width="2.2"/>
 <ellipse cx="800" cy="380" rx="300" ry="95" fill="url(#psheen)" opacity=".5"/>
 <circle cx="662" cy="396" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
-<g id="stick-left"><circle id="in-l3" cx="662" cy="396" r="31" fill="url(#pcap)" stroke="#586372" stroke-width="1.6" class="hw"/><circle cx="662" cy="396" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>
+<path id="in-left_up" class="hw arm" d="M 640.1,374.1 L 630.9,364.9 A 44,44 0 0 1 693.1,364.9 L 683.9,374.1 A 31,31 0 0 0 640.1,374.1 Z" fill="transparent"><title>left_up — push the left stick up</title></path>
+<path id="in-left_right" class="hw arm" d="M 683.9,374.1 L 693.1,364.9 A 44,44 0 0 1 693.1,427.1 L 683.9,417.9 A 31,31 0 0 0 683.9,374.1 Z" fill="transparent"><title>left_right — push the left stick right</title></path>
+<path id="in-left_down" class="hw arm" d="M 683.9,417.9 L 693.1,427.1 A 44,44 0 0 1 630.9,427.1 L 640.1,417.9 A 31,31 0 0 0 683.9,417.9 Z" fill="transparent"><title>left_down — push the left stick down</title></path>
+<path id="in-left_left" class="hw arm" d="M 640.1,417.9 L 630.9,427.1 A 44,44 0 0 1 630.9,364.9 L 640.1,374.1 A 31,31 0 0 0 640.1,417.9 Z" fill="transparent"><title>left_left — push the left stick left</title></path>
+<g id="stick-left" pointer-events="none"><circle id="in-l3" cx="662" cy="396" r="31" fill="url(#pcap)" stroke="#586372" stroke-width="1.6" class="hw" pointer-events="auto"><title>l3 — click the left stick in. Many pads never send this.</title></circle><circle cx="662" cy="396" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>
 <circle cx="872" cy="500" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
-<g id="stick-right"><circle id="in-r3" cx="872" cy="500" r="31" fill="url(#pcap)" stroke="#586372" stroke-width="1.6" class="hw"/><circle cx="872" cy="500" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>
+<path id="in-right_up" class="hw arm" d="M 850.1,478.1 L 840.9,468.9 A 44,44 0 0 1 903.1,468.9 L 893.9,478.1 A 31,31 0 0 0 850.1,478.1 Z" fill="transparent"><title>right_up — push the right stick up</title></path>
+<path id="in-right_right" class="hw arm" d="M 893.9,478.1 L 903.1,468.9 A 44,44 0 0 1 903.1,531.1 L 893.9,521.9 A 31,31 0 0 0 893.9,478.1 Z" fill="transparent"><title>right_right — push the right stick right</title></path>
+<path id="in-right_down" class="hw arm" d="M 893.9,521.9 L 903.1,531.1 A 44,44 0 0 1 840.9,531.1 L 850.1,521.9 A 31,31 0 0 0 893.9,521.9 Z" fill="transparent"><title>right_down — push the right stick down</title></path>
+<path id="in-right_left" class="hw arm" d="M 850.1,521.9 L 840.9,531.1 A 44,44 0 0 1 840.9,468.9 L 850.1,478.1 A 31,31 0 0 0 850.1,521.9 Z" fill="transparent"><title>right_left — push the right stick left</title></path>
+<g id="stick-right" pointer-events="none"><circle id="in-r3" cx="872" cy="500" r="31" fill="url(#pcap)" stroke="#586372" stroke-width="1.6" class="hw" pointer-events="auto"><title>r3 — click the right stick in. Many pads never send this.</title></circle><circle cx="872" cy="500" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>
 <circle cx="742" cy="500" r="42" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
 <path d="M 729.5,465 L 754.5,465 L 754.5,487.5 L 777,487.5 L 777,512.5 L 754.5,512.5 L 754.5,535 L 729.5,535 L 729.5,512.5 L 707,512.5 L 707,487.5 L 729.5,487.5 Z" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6" stroke-linejoin="round"/>
-<rect id="in-dpad_up" class="hw arm" x="729.5" y="465" width="25.0" height="35" rx="4" fill="transparent"/>
-<rect id="in-dpad_down" class="hw arm" x="729.5" y="500" width="25.0" height="35" rx="4" fill="transparent"/>
-<rect id="in-dpad_left" class="hw arm" x="707" y="487.5" width="35" height="25.0" rx="4" fill="transparent"/>
-<rect id="in-dpad_right" class="hw arm" x="742" y="487.5" width="35" height="25.0" rx="4" fill="transparent"/>
-<circle id="in-y" class="hw" cx="972" cy="359" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<rect id="in-dpad_up" class="hw arm" x="729.5" y="465" width="25.0" height="35" rx="4" fill="transparent"><title>dpad_up</title></rect>
+<rect id="in-dpad_down" class="hw arm" x="729.5" y="500" width="25.0" height="35" rx="4" fill="transparent"><title>dpad_down</title></rect>
+<rect id="in-dpad_left" class="hw arm" x="707" y="487.5" width="35" height="25.0" rx="4" fill="transparent"><title>dpad_left</title></rect>
+<rect id="in-dpad_right" class="hw arm" x="742" y="487.5" width="35" height="25.0" rx="4" fill="transparent"><title>dpad_right</title></rect>
+<circle id="in-y" class="hw" cx="972" cy="359" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"><title>y — face button, up</title></circle>
 <text x="972" y="366" class="glyph" fill="#e3b341" pointer-events="none">Y</text>
-<circle id="in-b" class="hw" cx="1023" cy="410" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<circle id="in-b" class="hw" cx="1023" cy="410" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"><title>b — face button, right</title></circle>
 <text x="1023" y="417" class="glyph" fill="#ff9492" pointer-events="none">B</text>
-<circle id="in-a" class="hw" cx="972" cy="461" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<circle id="in-a" class="hw" cx="972" cy="461" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"><title>a — face button, down</title></circle>
 <text x="972" y="468" class="glyph" fill="#7ee787" pointer-events="none">A</text>
-<circle id="in-x" class="hw" cx="921" cy="410" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"/>
+<circle id="in-x" class="hw" cx="921" cy="410" r="25" fill="url(#pctrl)" stroke="#586372" stroke-width="1.6"><title>x — face button, left</title></circle>
 <text x="921" y="417" class="glyph" fill="#79c0ff" pointer-events="none">X</text>
-<circle id="in-guide" class="hw" cx="800" cy="348" r="17" fill="#12171e" stroke="#333c4a" stroke-width="1.6"/>
+<circle id="in-guide" class="hw" cx="800" cy="348" r="17" fill="#12171e" stroke="#333c4a" stroke-width="1.6"><title>guide — macOS intercepts this for the Game Overlay</title></circle>
 <circle cx="800" cy="348" r="8" fill="none" stroke="#2b3340" stroke-width="1.4" pointer-events="none"/>
-<rect id="in-back" class="hw" x="729" y="371" width="38" height="22" rx="11" fill="url(#pctrl)" stroke="#586372" stroke-width="1.4"/>
+<rect id="in-back" class="hw" x="729" y="371" width="38" height="22" rx="11" fill="url(#pctrl)" stroke="#586372" stroke-width="1.4"><title>back</title></rect>
 <text x="748" y="410" class="eng" pointer-events="none">back</text>
-<rect id="in-start" class="hw" x="833" y="371" width="38" height="22" rx="11" fill="url(#pctrl)" stroke="#586372" stroke-width="1.4"/>
+<rect id="in-start" class="hw" x="833" y="371" width="38" height="22" rx="11" fill="url(#pctrl)" stroke="#586372" stroke-width="1.4"><title>start</title></rect>
 <text x="852" y="410" class="eng" pointer-events="none">start</text>
 </svg>

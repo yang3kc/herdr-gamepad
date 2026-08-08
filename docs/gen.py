@@ -287,18 +287,37 @@ q(f"""<defs>
   </radialGradient>
 </defs>""")
 
-q(f'<g class="hw"><rect id="in-lt" x="634" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
-q(f'<rect id="in-rt" x="874" y="244" width="92" height="48" rx="18" fill="url(#ptrig)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
-q(f'<rect id="in-lb" x="620" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
-q(f'<rect id="in-rb" x="860" y="290" width="120" height="46" rx="20" fill="url(#pctrl)" stroke="{CTRL_ST}" stroke-width="1.6"/></g>')
+for i, (x, y, ww, hh, rr, grad, tip) in enumerate((
+        (634, 244, 92, 48, 18, "ptrig", "lt — left trigger, analog"),
+        (874, 244, 92, 48, 18, "ptrig", "rt — right trigger, analog"),
+        (620, 290, 120, 46, 20, "pctrl", "lb — left bumper"),
+        (860, 290, 120, 46, 20, "pctrl", "rb — right bumper"))):
+    q(f'<rect id="in-{tip[:2]}" class="hw" x="{x}" y="{y}" width="{ww}" height="{hh}" rx="{rr}" '
+      f'fill="url(#{grad})" stroke="{CTRL_ST}" stroke-width="1.6"><title>{tip}</title></rect>')
 
 q(f'<path d="{BODY}" fill="url(#pbody)" stroke="{BODY_ST}" stroke-width="2.2"/>')
 q('<ellipse cx="800" cy="380" rx="300" ry="95" fill="url(#psheen)" opacity=".5"/>')
 
+import math
+
+def quadrant(cx, cy, ri, ro, a1, a2):
+    """Annulus sector — the ring around a stick, split into four hit zones."""
+    r1, r2 = math.radians(a1), math.radians(a2)
+    pt = lambda r, a: f"{cx + r * math.cos(a):.1f},{cy + r * math.sin(a):.1f}"
+    return (f"M {pt(ri, r1)} L {pt(ro, r1)} A {ro},{ro} 0 0 1 {pt(ro, r2)} "
+            f"L {pt(ri, r2)} A {ri},{ri} 0 0 0 {pt(ri, r1)} Z")
+
 for name, (cx, cy) in (("left", LSTICK), ("right", RSTICK)):
+    click = "l3" if name == "left" else "r3"
     q(f'<circle cx="{cx}" cy="{cy}" r="44" fill="{RECESS}" stroke="#2b3340" stroke-width="2"/>')
-    q(f'<g id="stick-{name}"><circle id="in-{"l3" if name == "left" else "r3"}" cx="{cx}" cy="{cy}" r="31" '
-      f'fill="url(#pcap)" stroke="{CTRL_ST}" stroke-width="1.6" class="hw"/>'
+    # the ring doubles as four direction targets, so pushing the stick lights
+    # the same shape you would click to bind that direction
+    for d, a1 in (("up", 225), ("right", 315), ("down", 45), ("left", 135)):
+        q(f'<path id="in-{name}_{d}" class="hw arm" d="{quadrant(cx, cy, 31, 44, a1, a1 + 90)}" '
+          f'fill="transparent"><title>{name}_{d} — push the {name} stick {d}</title></path>')
+    q(f'<g id="stick-{name}" pointer-events="none"><circle id="in-{click}" cx="{cx}" cy="{cy}" r="31" '
+      f'fill="url(#pcap)" stroke="{CTRL_ST}" stroke-width="1.6" class="hw" pointer-events="auto">'
+      f'<title>{click} — click the {name} stick in. Many pads never send this.</title></circle>'
       f'<circle cx="{cx}" cy="{cy}" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/></g>')
 
 cx, cy = DPAD
@@ -312,18 +331,22 @@ for d, (x, y, ww, hh) in (("up",    (cx-b, cy-a, 2*b, a)),
                           ("down",  (cx-b, cy,   2*b, a)),
                           ("left",  (cx-a, cy-b, a,   2*b)),
                           ("right", (cx,   cy-b, a,   2*b))):
-    q(f'<rect id="in-dpad_{d}" class="hw arm" x="{x}" y="{y}" width="{ww}" height="{hh}" rx="4" fill="transparent"/>')
+    q(f'<rect id="in-dpad_{d}" class="hw arm" x="{x}" y="{y}" width="{ww}" height="{hh}" rx="4" '
+      f'fill="transparent"><title>dpad_{d}</title></path>'.replace("</path>", "</rect>"))
 
 for lbl, dx, dy in (("y", 0, -FOFF), ("b", FOFF, 0), ("a", 0, FOFF), ("x", -FOFF, 0)):
     bx, by = FACE[0] + dx, FACE[1] + dy
-    q(f'<circle id="in-{lbl}" class="hw" cx="{bx}" cy="{by}" r="25" fill="url(#pctrl)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
+    face_pos = {"a": "down", "b": "right", "x": "left", "y": "up"}[lbl]
+    q(f'<circle id="in-{lbl}" class="hw" cx="{bx}" cy="{by}" r="25" fill="url(#pctrl)" '
+      f'stroke="{CTRL_ST}" stroke-width="1.6"><title>{lbl} — face button, {face_pos}</title></circle>')
     q(f'<text x="{bx}" y="{by+7}" class="glyph" fill="{FACE_COLORS[lbl]}" pointer-events="none">{lbl.upper()}</text>')
 
-q(f'<circle id="in-guide" class="hw" cx="{GUIDE[0]}" cy="{GUIDE[1]}" r="17" fill="{RECESS}" stroke="#333c4a" stroke-width="1.6"/>')
+q(f'<circle id="in-guide" class="hw" cx="{GUIDE[0]}" cy="{GUIDE[1]}" r="17" fill="{RECESS}" '
+  f'stroke="#333c4a" stroke-width="1.6"><title>guide — macOS intercepts this for the Game Overlay</title></circle>')
 q(f'<circle cx="{GUIDE[0]}" cy="{GUIDE[1]}" r="8" fill="none" stroke="#2b3340" stroke-width="1.4" pointer-events="none"/>')
 for cx2, name in ((BACK[0], "back"), (START[0], "start")):
     q(f'<rect id="in-{name}" class="hw" x="{cx2-19}" y="{BACK[1]-11}" width="38" height="22" rx="11" '
-      f'fill="url(#pctrl)" stroke="{CTRL_ST}" stroke-width="1.4"/>')
+      f'fill="url(#pctrl)" stroke="{CTRL_ST}" stroke-width="1.4"><title>{name}</title></rect>')
     q(f'<text x="{cx2}" y="{BACK[1]+28}" class="eng" pointer-events="none">{name}</text>')
 
 q("</svg>")
