@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="-apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<defs>
+  <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3d4653"/><stop offset=".55" stop-color="#2a323d"/>
+    <stop offset="1" stop-color="#191f27"/>
+  </linearGradient>
+  <linearGradient id="ctrl" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#454f5d"/><stop offset="1" stop-color="#2b333e"/>
+  </linearGradient>
+  <linearGradient id="trig" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3c4552"/><stop offset="1" stop-color="#252d38"/>
+  </linearGradient>
+  <radialGradient id="sheen" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#6d7b8e" stop-opacity=".45"/>
+    <stop offset="1" stop-color="#6d7b8e" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="cap" cx="0.4" cy="0.3" r="0.85">
+    <stop offset="0" stop-color="#4e5866"/><stop offset="1" stop-color="#262e39"/>
+  </radialGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#d2a8ff" stop-opacity=".20"/>
+    <stop offset="1" stop-color="#d2a8ff" stop-opacity="0"/>
+  </radialGradient>
+  <style>
+    .ogbrow { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:17px; font-weight:700; fill:#d2a8ff;
+               letter-spacing:3.4px; }
+    .ogh1   { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:52px; font-weight:700; fill:#e6edf3;
+               letter-spacing:.5px; }
+    .ogtag  { font-size:31px; font-weight:600; fill:#e6edf3; }
+    .ogsub  { font-size:19px; fill:#8b949e; }
+    .ogurl  { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:17px; fill:#6e7b8b; }
+    .glyph  { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:20px; font-weight:700; text-anchor:middle; }
+    .eng    { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; fill:#7c8896; text-anchor:middle;
+               letter-spacing:.4px; }
+  </style>
+</defs>
+<rect width="1200" height="630" fill="#0d1117"/>
+<rect x="0" y="0" width="6" height="630" fill="#d2a8ff"/>
+<ellipse cx="880" cy="320" rx="420" ry="300" fill="url(#glow)"/>
+<g transform="translate(240.7,-72.4) scale(0.8242)">
+<rect x="634" y="244" width="92" height="48" rx="18" fill="url(#trig)" stroke="#586372" stroke-width="1.6"/>
+<rect x="874" y="244" width="92" height="48" rx="18" fill="url(#trig)" stroke="#586372" stroke-width="1.6"/>
+<rect x="620" y="290" width="120" height="46" rx="20" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+<rect x="860" y="290" width="120" height="46" rx="20" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+<path d="M 800,308 C 742,300 674,302 620,322 C 546,350 476,398 464,472 C 452,540 466,616 498,670 C 530,722 592,726 622,682 C 650,646 664,616 680,600 C 710,576 750,566 800,566 C 850,566 890,576 920,600 C 936,616 950,646 978,682 C 1008,726 1070,722 1102,670 C 1134,616 1148,540 1136,472 C 1124,398 1054,350 980,322 C 926,302 858,300 800,308 Z" fill="url(#body)" stroke="#4b5666" stroke-width="2.2"/>
+<ellipse cx="800" cy="380" rx="300" ry="95" fill="url(#sheen)" opacity=".5"/>
+
+  <circle cx="662" cy="396" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+  <circle cx="662" cy="396" r="31" fill="url(#cap)" stroke="#586372" stroke-width="1.6"/>
+  <circle cx="662" cy="396" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/>
+
+  <circle cx="742" cy="500" r="42" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+  <path d="M 729.5,465 L 754.5,465 L 754.5,487.5 L 777,487.5 L 777,512.5 L 754.5,512.5 L 754.5,535 L 729.5,535 L 729.5,512.5 L 707,512.5 L 707,487.5 L 729.5,487.5 Z" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6" stroke-linejoin="round"/>
+
+  <circle cx="872" cy="500" r="44" fill="#12171e" stroke="#2b3340" stroke-width="2"/>
+  <circle cx="872" cy="500" r="31" fill="url(#cap)" stroke="#586372" stroke-width="1.6"/>
+  <circle cx="872" cy="500" r="18" fill="none" stroke="#232b36" stroke-width="1.4"/>
+
+  <circle cx="972" cy="359" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="972" y="366" class="glyph" fill="#e3b341">Y</text>
+
+  <circle cx="1023" cy="410" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="1023" y="417" class="glyph" fill="#ff9492">B</text>
+
+  <circle cx="972" cy="461" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="972" y="468" class="glyph" fill="#7ee787">A</text>
+
+  <circle cx="921" cy="410" r="25" fill="url(#ctrl)" stroke="#586372" stroke-width="1.6"/>
+  <text x="921" y="417" class="glyph" fill="#79c0ff">X</text>
+<circle cx="800" cy="348" r="17" fill="#12171e" stroke="#333c4a" stroke-width="1.6"/>
+<circle cx="800" cy="348" r="8" fill="none" stroke="#2b3340" stroke-width="1.4"/>
+<rect x="729" y="371" width="38" height="22" rx="11" fill="url(#ctrl)" stroke="#586372" stroke-width="1.4"/>
+<text x="748" y="410" class="eng">back</text>
+<rect x="833" y="371" width="38" height="22" rx="11" fill="url(#ctrl)" stroke="#586372" stroke-width="1.4"/>
+<text x="852" y="410" class="eng">start</text>
+</g>
+<text x="76" y="150" class="ogbrow">HERDR PLUGIN</text>
+<text x="76" y="216" class="ogh1">herdr-gamepad</text>
+<text x="76" y="278" class="ogtag">Drive Herdr with</text>
+<text x="76" y="316" class="ogtag">a game controller.</text>
+<text x="76" y="366" class="ogsub">Patrol your AI agents, split panes and</text>
+<text x="76" y="392" class="ogsub">switch workspaces from the couch.</text>
+<rect x="76" y="440" width="70" height="28" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/>
+<text x="111" y="459" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="middle">LT RT</text>
+<text x="156" y="460" class="ogsub">agents</text>
+<rect x="224" y="440" width="70" height="28" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/>
+<text x="259" y="459" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="middle">LB RB</text>
+<text x="304" y="460" class="ogsub">tabs</text>
+<rect x="372" y="440" width="60" height="28" rx="8" fill="#1b2330" stroke="#414d5e" stroke-width="1.4"/>
+<text x="402" y="459" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" font-weight="700" fill="#e6edf3" text-anchor="middle">BACK</text>
+<text x="442" y="460" class="ogsub">prefix</text>
+<text x="76" y="536" class="ogurl">htlin222.github.io/herdr-gamepad</text>
+</svg>

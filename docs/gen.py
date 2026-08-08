@@ -331,3 +331,99 @@ q("</svg>")
 padfile = HERE / "pad.svg"
 padfile.write_text("\n".join(pad) + "\n")
 print("wrote", padfile)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  docs/og.svg — the 1200×630 social card. Same shell, same palette, sized
+#  for the crop Twitter/Slack/Discord/iMessage all agree on (1.91:1).
+# ═══════════════════════════════════════════════════════════════════════
+OGW, OGH = 1200, 630
+og = []
+def o(s): og.append(s)
+
+# place the pad's 436,214 728×528 frame into the right-hand half
+SC = 600 / 728
+TX, TY = 600 - 436 * SC, 104 - 214 * SC
+
+o(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {OGW} {OGH}" '
+  f'width="{OGW}" height="{OGH}" font-family="{SANS}">')
+o(f"""<defs>
+  <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3d4653"/><stop offset=".55" stop-color="#2a323d"/>
+    <stop offset="1" stop-color="#191f27"/>
+  </linearGradient>
+  <linearGradient id="ctrl" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#454f5d"/><stop offset="1" stop-color="#2b333e"/>
+  </linearGradient>
+  <linearGradient id="trig" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3c4552"/><stop offset="1" stop-color="#252d38"/>
+  </linearGradient>
+  <radialGradient id="sheen" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#6d7b8e" stop-opacity=".45"/>
+    <stop offset="1" stop-color="#6d7b8e" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="cap" cx="0.4" cy="0.3" r="0.85">
+    <stop offset="0" stop-color="#4e5866"/><stop offset="1" stop-color="#262e39"/>
+  </radialGradient>
+  <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="{PREFIX}" stop-opacity=".20"/>
+    <stop offset="1" stop-color="{PREFIX}" stop-opacity="0"/>
+  </radialGradient>
+  <style>
+    .ogbrow {{ font-family:{MONO}; font-size:17px; font-weight:700; fill:{PREFIX};
+               letter-spacing:3.4px; }}
+    .ogh1   {{ font-family:{MONO}; font-size:52px; font-weight:700; fill:{TXT};
+               letter-spacing:.5px; }}
+    .ogtag  {{ font-size:31px; font-weight:600; fill:{TXT}; }}
+    .ogsub  {{ font-size:19px; fill:{DIM}; }}
+    .ogurl  {{ font-family:{MONO}; font-size:17px; fill:#6e7b8b; }}
+    .glyph  {{ font-family:{MONO}; font-size:20px; font-weight:700; text-anchor:middle; }}
+    .eng    {{ font-family:{MONO}; font-size:12px; fill:#7c8896; text-anchor:middle;
+               letter-spacing:.4px; }}
+  </style>
+</defs>""")
+
+o(f'<rect width="{OGW}" height="{OGH}" fill="{BG}"/>')
+o(f'<rect x="0" y="0" width="6" height="{OGH}" fill="{PREFIX}"/>')
+o('<ellipse cx="880" cy="320" rx="420" ry="300" fill="url(#glow)"/>')
+
+o(f'<g transform="translate({TX:.1f},{TY:.1f}) scale({SC:.4f})">')
+o(f'<rect x="634" y="244" width="92" height="48" rx="18" fill="url(#trig)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
+o(f'<rect x="874" y="244" width="92" height="48" rx="18" fill="url(#trig)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
+o(f'<rect x="620" y="290" width="120" height="46" rx="20" fill="url(#ctrl)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
+o(f'<rect x="860" y="290" width="120" height="46" rx="20" fill="url(#ctrl)" stroke="{CTRL_ST}" stroke-width="1.6"/>')
+o(f'<path d="{BODY}" fill="url(#body)" stroke="{BODY_ST}" stroke-width="2.2"/>')
+o('<ellipse cx="800" cy="380" rx="300" ry="95" fill="url(#sheen)" opacity=".5"/>')
+o(stick(*LSTICK)); o(dpad(*DPAD)); o(stick(*RSTICK))
+for lbl, dx, dy in (("y", 0, -FOFF), ("b", FOFF, 0), ("a", 0, FOFF), ("x", -FOFF, 0)):
+    o(facebtn(FACE[0] + dx, FACE[1] + dy, lbl))
+o(f'<circle cx="{GUIDE[0]}" cy="{GUIDE[1]}" r="17" fill="{RECESS}" stroke="#333c4a" stroke-width="1.6"/>')
+o(f'<circle cx="{GUIDE[0]}" cy="{GUIDE[1]}" r="8" fill="none" stroke="#2b3340" stroke-width="1.4"/>')
+for cx2, name in ((BACK[0], "back"), (START[0], "start")):
+    o(f'<rect x="{cx2-19}" y="{BACK[1]-11}" width="38" height="22" rx="11" '
+      f'fill="url(#ctrl)" stroke="{CTRL_ST}" stroke-width="1.4"/>')
+    o(f'<text x="{cx2}" y="{BACK[1]+28}" class="eng">{name}</text>')
+o('</g>')
+
+o('<text x="76" y="150" class="ogbrow">HERDR PLUGIN</text>')
+o('<text x="76" y="216" class="ogh1">herdr-gamepad</text>')
+o('<text x="76" y="278" class="ogtag">Drive Herdr with</text>')
+o('<text x="76" y="316" class="ogtag">a game controller.</text>')
+o('<text x="76" y="366" class="ogsub">Patrol your AI agents, split panes and</text>')
+o('<text x="76" y="392" class="ogsub">switch workspaces from the couch.</text>')
+
+for i, (cap, what) in enumerate((("LT RT", "agents"), ("LB RB", "tabs"), ("BACK", "prefix"))):
+    bx = 76 + i * 148
+    cw = len(cap) * 9.9 + 20
+    o(f'<rect x="{bx}" y="440" width="{cw:.0f}" height="28" rx="8" fill="{CHIPBG}" '
+      f'stroke="{CHIPST}" stroke-width="1.4"/>')
+    o(f'<text x="{bx + cw/2:.0f}" y="459" font-family="{MONO}" font-size="15" '
+      f'font-weight="700" fill="{TXT}" text-anchor="middle">{cap}</text>')
+    o(f'<text x="{bx + cw + 10:.0f}" y="460" class="ogsub">{what}</text>')
+
+o('<text x="76" y="536" class="ogurl">htlin222.github.io/herdr-gamepad</text>')
+o("</svg>")
+
+ogfile = HERE / "og.svg"
+ogfile.write_text("\n".join(og) + "\n")
+print("wrote", ogfile)

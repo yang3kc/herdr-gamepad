@@ -13,12 +13,16 @@
 <meta property="og:title" content="herdr-gamepad — drive Herdr with a game controller">
 <meta property="og:description" content="Patrol your AI agents, split panes and switch workspaces from the couch. Any gamepad, mapped by you in 60 seconds.">
 <meta property="og:url" content="https://htlin222.github.io/herdr-gamepad/">
-<meta property="og:image" content="https://htlin222.github.io/herdr-gamepad/gamepad.png">
+<meta property="og:image" content="https://htlin222.github.io/herdr-gamepad/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="herdr-gamepad — drive Herdr with a game controller. A dark illustration of a game controller beside the plugin name.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="herdr-gamepad — drive Herdr with a game controller">
 <meta name="twitter:description" content="Patrol your AI agents, split panes and switch workspaces from the couch. Any gamepad, mapped by you in 60 seconds.">
-<meta name="twitter:image" content="https://htlin222.github.io/herdr-gamepad/gamepad.png">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>&#127918;</text></svg>">
+<meta name="twitter:image" content="https://htlin222.github.io/herdr-gamepad/og.png">
+<meta name="twitter:image:alt" content="herdr-gamepad — drive Herdr with a game controller.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a371f7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='6' x2='10' y1='11' y2='11'/%3E%3Cline x1='8' x2='8' y1='9' y2='13'/%3E%3Cline x1='15' x2='15.01' y1='12' y2='12'/%3E%3Cline x1='18' x2='18.01' y1='10' y2='10'/%3E%3Cpath d='M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z'/%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -105,7 +109,7 @@ ul{margin:0 0 16px;padding-left:22px}
 .AppHeader-brand{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--fgColor-default)}
 .AppHeader-brand:hover{text-decoration:none}
 .AppHeader nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
-.AppHeader nav a{color:var(--fgColor-muted);padding:5px 10px;border-radius:6px;font-weight:500}
+.AppHeader nav a{display:inline-flex;align-items:center;gap:6px;color:var(--fgColor-muted);padding:5px 10px;border-radius:6px;font-weight:500}
 .AppHeader nav a:hover{background:var(--bgColor-neutral-muted);color:var(--fgColor-default);text-decoration:none}
 
 .Box{border:1px solid var(--borderColor-default);border-radius:6px;background:var(--bgColor-default)}
@@ -204,21 +208,47 @@ input[type=checkbox]{accent-color:var(--fgColor-accent)}
 .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .field{display:flex;align-items:center;gap:8px;font-size:13px}
 .field select{width:auto;min-width:110px}
+/* Lucide icons — MIT, inlined as a sprite so nothing is fetched */
+.icon{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.icon-lg{width:20px;height:20px}
+h2 .icon{width:22px;height:22px;color:var(--fgColor-muted);vertical-align:-3px;margin-right:10px}
+.Box-header .icon{color:var(--fgColor-muted)}
+#theme-toggle{display:inline-flex;align-items:center;padding:6px 8px}
 footer{padding:40px 0;border-top:1px solid var(--borderColor-muted);color:var(--fgColor-muted);font-size:13px}
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<!-- Lucide (lucide.dev), MIT. Inlined so the page fetches nothing. -->
+<defs>
+  <symbol id="i-gamepad" viewBox="0 0 24 24"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></symbol>
+  <symbol id="i-sun-moon" viewBox="0 0 24 24"><path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+  <symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2 2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></symbol>
+  <symbol id="i-list-checks" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></symbol>
+</defs>
+</svg>
+
+
 <header class="AppHeader">
   <div class="container-wide AppHeader-inner">
-    <a class="AppHeader-brand" href="#top">&#127918; herdr-gamepad</a>
+    <a class="AppHeader-brand" href="#top"><svg class="icon icon-lg" aria-hidden="true"><use href="#i-gamepad"/></svg> herdr-gamepad</a>
     <nav>
       <a href="#install">Install</a>
       <a href="#configure">Configure</a>
       <a href="#manual">Manual</a>
       <a href="#why">Why</a>
-      <a href="https://github.com/htlin222/herdr-gamepad">GitHub</a>
-      <a href="#" id="theme-toggle" title="Toggle theme">&#9689;</a>
+      <a href="https://github.com/htlin222/herdr-gamepad"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg> GitHub</a>
+      <a href="#" id="theme-toggle" title="Toggle light, dark or system theme" aria-label="Toggle theme"><svg class="icon" aria-hidden="true"><use href="#i-sun-moon"/></svg></a>
     </nav>
   </div>
 </header>
@@ -233,9 +263,9 @@ footer{padding:40px 0;border-top:1px solid var(--borderColor-muted);color:var(--
       Any gamepad, mapped by you in 60 seconds.
     </p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="#install">Install</a>
-      <a class="btn" href="#configure">Open the configurator</a>
-      <a class="btn" href="https://github.com/htlin222/herdr-gamepad">View source</a>
+      <a class="btn btn-primary" href="#install"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg> Install</a>
+      <a class="btn" href="#configure"><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg> Open the configurator</a>
+      <a class="btn" href="https://github.com/htlin222/herdr-gamepad"><svg class="icon" aria-hidden="true"><use href="#i-github"/></svg> View source</a>
     </div>
     <figure>
       <img src="gamepad.png" alt="Annotated gamepad showing the default bindings: triggers cycle agents, bumpers cycle tabs, D-pad focuses panes, sticks scroll and send arrow keys, and holding BACK opens a prefix layer for zoom, splits and panels.">
@@ -246,16 +276,16 @@ footer{padding:40px 0;border-top:1px solid var(--borderColor-muted);color:var(--
 
 <section class="section" id="install">
   <div class="container">
-    <h2>Install</h2>
+    <h2><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Install</h2>
     <p class="subtitle">Hand it to your agent, or do it yourself. Both take about a minute.</p>
 
     <div class="Box" style="margin-bottom:24px">
       <div class="Box-header">
-        <span>Paste this at your coding agent</span>
+        <svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span>Paste this at your coding agent</span>
         <span class="Label Label--accent">Claude Code &middot; Codex &middot; Cursor</span>
       </div>
       <div class="copy-wrap">
-        <button class="btn btn-sm" data-copy="#agent-prompt">Copy</button>
+        <button class="btn btn-sm copy" data-copy="#agent-prompt"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
         <pre id="agent-prompt">Install the herdr-gamepad plugin from https://github.com/htlin222/herdr-gamepad
 into my Herdr setup on macOS. Work through it step by step and stop to tell me
 whenever you need something from me:
@@ -287,16 +317,16 @@ whenever you need something from me:
 
     <div class="grid grid-2">
       <div class="Box">
-        <div class="Box-header">Or three commands</div>
+        <div class="Box-header"><svg class="icon" aria-hidden="true"><use href="#i-terminal"/></svg><span>Or three commands</span></div>
         <div class="copy-wrap">
-          <button class="btn btn-sm" data-copy="#manual-install">Copy</button>
+          <button class="btn btn-sm copy" data-copy="#manual-install"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
           <pre id="manual-install">herdr plugin install https://github.com/htlin222/herdr-gamepad
 cp config/gamepad.toml "$(herdr plugin config-dir gamepad)/gamepad.toml"
 herdr plugin action invoke gamepad.start</pre>
         </div>
       </div>
       <div class="Box">
-        <div class="Box-header">What you need</div>
+        <div class="Box-header"><svg class="icon" aria-hidden="true"><use href="#i-list-checks"/></svg><span>What you need</span></div>
         <div class="Box-body" style="font-size:13px">
           <ul>
             <li>macOS</li>
@@ -317,7 +347,7 @@ herdr plugin action invoke gamepad.start</pre>
 
 <section class="section" id="configure">
   <div class="container-wide">
-    <h2>Map your pad</h2>
+    <h2><svg class="icon" aria-hidden="true"><use href="#i-sliders"/></svg>Map your pad</h2>
     <p class="subtitle">
       Plug a controller in and press something &mdash; the picture lights up and the table
       jumps to that row. Pick actions, then copy the <code>gamepad.toml</code> below.
@@ -327,7 +357,7 @@ herdr plugin action invoke gamepad.start</pre>
       <div class="pad-panel">
         <div class="Box">
           <div class="Box-header">
-            <span>Your controller</span>
+            <svg class="icon" aria-hidden="true"><use href="#i-gamepad"/></svg><span>Your controller</span>
             <span class="Label" id="pad-count" style="margin-left:auto">0 connected</span>
           </div>
           <div class="Box-body" style="padding:8px">
@@ -434,7 +464,7 @@ herdr plugin action invoke gamepad.start</pre>
         </span>
       </div>
       <div class="copy-wrap">
-        <button class="btn btn-sm" data-copy="#toml-out">Copy</button>
+        <button class="btn btn-sm copy" data-copy="#toml-out"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
         <pre id="toml-out"></pre>
       </div>
     </div>
@@ -443,7 +473,7 @@ herdr plugin action invoke gamepad.start</pre>
 
 <section class="section" id="manual">
   <div class="container">
-    <h2>Manual</h2>
+    <h2><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Manual</h2>
     <p class="subtitle">Everything between plugging the pad in and forgetting it is there.</p>
 
     <h3 id="two-blocks">1 &middot; Two blocks, one shape</h3>
@@ -531,7 +561,7 @@ up = { input = "right_up", repeat = true }</pre>
       <code>~/.config/herdr/config.toml</code>:
     </p>
     <div class="copy-wrap">
-      <button class="btn btn-sm" data-copy="#keybind-snip">Copy</button>
+      <button class="btn btn-sm copy" data-copy="#keybind-snip"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
       <pre id="keybind-snip">[[keys.command]]
 key = "prefix+g"
 type = "plugin_action"
@@ -602,7 +632,7 @@ params = { direction = "right", ratio = 0.5 }</pre>
 
 <section class="section" id="why">
   <div class="container">
-    <h2>Rationale</h2>
+    <h2><svg class="icon" aria-hidden="true"><use href="#i-lightbulb"/></svg>Rationale</h2>
     <p class="subtitle">Why the design is the way it is, including the parts that look odd.</p>
 
     <h3>Why a gamepad at all</h3>
@@ -689,7 +719,7 @@ params = { direction = "right", ratio = 0.5 }</pre>
 
 <section class="section" id="marketplace">
   <div class="container">
-    <h2>Listed in the Herdr marketplace</h2>
+    <h2><svg class="icon" aria-hidden="true"><use href="#i-store"/></svg>Listed in the Herdr marketplace</h2>
     <p>
       The <a href="https://herdr.dev/docs/marketplace/">Herdr marketplace</a> index is
       built from GitHub repository search. The <code>herdr-plugin</code> topic is the only
@@ -707,7 +737,7 @@ params = { direction = "right", ratio = 0.5 }</pre>
     </table>
     <p>Publishing your own plugin takes the same two commands:</p>
     <div class="copy-wrap">
-      <button class="btn btn-sm" data-copy="#topics-snip">Copy</button>
+      <button class="btn btn-sm copy" data-copy="#topics-snip"><svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
       <pre id="topics-snip">gh repo edit --add-topic herdr-plugin --add-topic herdr --add-topic gamepad
 gh repo edit --description "Drive Herdr with a game controller."</pre>
     </div>
@@ -722,6 +752,7 @@ gh repo edit --description "Drive Herdr with a game controller."</pre>
       <a href="https://github.com/htlin222/herdr-gamepad">herdr-gamepad</a> &middot; MIT
       &middot; built for <a href="https://herdr.dev">Herdr</a>
       &middot; <a href="https://herdr.dev/docs/marketplace/">marketplace</a>
+      &middot; icons by <a href="https://lucide.dev">Lucide</a>
     </p>
   </div>
 </footer>
@@ -747,9 +778,10 @@ document.addEventListener('click', e => {
   if (!btn) return;
   const text = document.querySelector(btn.dataset.copy).innerText;
   navigator.clipboard.writeText(text).then(() => {
-    const was = btn.textContent;
-    btn.textContent = 'Copied';
-    setTimeout(() => btn.textContent = was, 1400);
+    const use = btn.querySelector('use'), label = btn.querySelector('span');
+    use.setAttribute('href', '#i-check');
+    label.textContent = 'Copied';
+    setTimeout(() => { use.setAttribute('href', '#i-copy'); label.textContent = 'Copy'; }, 1400);
   });
 });
 
@@ -892,7 +924,7 @@ function optionsFor(layer){
       }
       any = true;
       const suffix = (layer === 'pre' && m.pfx === null)
-        ? '   ⚠ bind prefix+… first'
+        ? '   (bind prefix+… first)'
         : (m.note ? '   — ' + m.note : '');
       og.appendChild(new Option(it.id + suffix, it.id));
     }

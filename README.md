@@ -1,16 +1,27 @@
-# herdr-gamepad
+<p align="center">
+  <img src="docs/og.png" alt="herdr-gamepad — drive Herdr with a game controller" width="840">
+</p>
 
-Drive [Herdr](https://herdr.dev) with a game controller. Patrol your AI agents, split
-panes, and switch workspaces from the couch — any gamepad, mapped by you in 60 seconds.
+<h1 align="center">herdr-gamepad</h1>
+
+<p align="center">
+  Drive <a href="https://herdr.dev">Herdr</a> with a game controller. Patrol your AI agents,
+  split panes, and switch workspaces from the couch — any gamepad, mapped by you in 60 seconds.
+</p>
+
+<p align="center">
+  <a href="https://htlin222.github.io/herdr-gamepad/"><b>Open the configurator</b></a> —
+  plug a pad in, press buttons, pick actions from a dropdown, copy the generated
+  <code>gamepad.toml</code>.
+</p>
+
+---
+
+## The default layout
 
 <p align="center">
   <img src="docs/gamepad.png" alt="Annotated gamepad showing the default herdr-gamepad bindings: triggers cycle agents, bumpers cycle tabs, D-pad focuses panes, sticks scroll and send arrow keys, and holding BACK opens a prefix layer for zoom, splits and panels." width="100%">
 </p>
-
-**[Open the configurator →](https://htlin222.github.io/herdr-gamepad/)** — plug a pad in,
-press buttons, pick actions from a dropdown, copy the generated `gamepad.toml`.
-
----
 
 ## Install
 
