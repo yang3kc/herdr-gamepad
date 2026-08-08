@@ -71,11 +71,30 @@ struct Keymap {
         return map
     }
 
+    /// Herdr's prefix chord itself — `ctrl+a`.
+    ///
+    /// A gamepad prefix layer sends this for real the moment you press the
+    /// pad's prefix button, so Herdr enters prefix mode exactly as it would
+    /// from the keyboard, indicator and all.
+    var prefixChord: String { prefix }
+
+    /// What follows the prefix in an action's binding: `prefix+x` → `x`.
+    ///
+    /// `nil` means the action is not reached through Herdr's prefix at all
+    /// (`next_tab = "shift+right"`), which is precisely what cannot live in a
+    /// gamepad prefix layer — see `Config.checkPrefixLayers`.
+    func afterPrefix(for action: String) -> String? {
+        guard let raw = bindings[action] ?? Keymap.defaults[action],
+              raw.hasPrefix("prefix+")
+        else { return nil }
+        return String(raw.dropFirst("prefix+".count))
+    }
+
     /// The key spec for an action, with `prefix+` expanded into a real chord
     /// sequence (`prefix+n` → `ctrl+a n`).
     func spec(for action: String) -> String? {
         guard let raw = bindings[action] ?? Keymap.defaults[action] else { return nil }
-        guard raw.hasPrefix("prefix+") else { return raw }
-        return "\(prefix) \(raw.dropFirst("prefix+".count))"
+        guard let after = afterPrefix(for: action) else { return raw }
+        return "\(prefix) \(after)"
     }
 }

@@ -75,6 +75,14 @@ repeat_delay_ms   = 400    # hold this long before auto-repeat starts
 repeat_rate_ms    = 80     # then repeat this often
 scroll_invert     = false  # flip scroll direction — depends on your macOS
                            # "natural scrolling" setting, so no right default
+prefix_timeout_ms = 2000   # after TAPPING a prefix, how long it waits for the
+                           # next button. 0 = no tapping, hold-only (see below)
+prefix_notify     = false  # announce an armed prefix as a notification. Off:
+                           # the prefix is Herdr's own now, so Herdr already
+                           # shows the mode. This would be a second, less
+                           # reliable copy — notifications are rate-limited and
+                           # hidden for the focused tab. Turn on if you also
+                           # want the pad's tap timeout spelled out
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -88,10 +96,41 @@ scroll_invert     = false  # flip scroll direction — depends on your macOS
 #  Auto-repeat while held:
 #      focus_pane_down = { input = "dpad_down", repeat = true }
 #
-#  A PREFIX LAYER — hold one button to give every other input a second
-#  meaning, the way tmux's prefix key works:
+#  A PREFIX LAYER — one button gives every other input a second meaning,
+#  the way tmux's prefix key works:
 #
 #      split_vertical = { input = "x", hold = "lb" }   # lb THEN x
+#
+#  Despite the name, `hold` is reached two ways, and both are always live:
+#
+#      HOLD  keep lb down, press x
+#      TAP   press and release lb on its own, then press x within
+#            prefix_timeout_ms — no need to keep a finger on it
+#
+#  Tapping the armed prefix again backs out of it. Anything else you press
+#  spends it, so a stray tap costs you one button, not a mode you are stuck
+#  in. Set prefix_timeout_ms = 0 to switch tapping off and keep hold only.
+#
+#  THE LAYER *IS* HERDR'S PREFIX MODE. Pressing the pad's prefix button sends
+#  your Herdr prefix (ctrl+a) for real, the moment your thumb lands — so Herdr
+#  shows the mode exactly as it does from the keyboard, and the second press
+#  is a plain key rather than a chord this plugin fakes.
+#
+#  The price: everything in the layer has to be a Herdr action YOU bound
+#  through the prefix, e.g. `split_vertical = "prefix+b"` in config.toml.
+#  Prefix mode eats the next key, so these cannot live here — each is refused
+#  at startup with a message naming the binding:
+#
+#      an [input] keystroke     it would go to Herdr, not to your pane
+#      a built-in (agent_*)     talks over the socket and sends no key at
+#                               all, so the mode would stay open
+#      a non-prefix binding     next_tab = "shift+right" — Herdr would eat
+#                               the chord and match nothing
+#
+#  Put those in the base layer instead; that is what the base layer is for.
+#
+#  A button used as a prefix never does anything by itself — not on tap, not
+#  on hold — so leave it out of the layers below.
 #
 #  This is better than using the guide button, which macOS intercepts for
 #  its Game Overlay before any program can see it.
@@ -120,7 +159,8 @@ goto                   = "y"     # session navigator (prefix+g)
 # ── Tabs ────────────────────────────────────────────────────────────────
 next_tab               = "rb"
 previous_tab           = "lb"
-# new_tab              = ""
+# Same shoulder as next_tab, one layer up — the tab family stays on one button.
+new_tab                = { input = "rb", hold = "back" }
 # close_tab            = ""
 # rename_tab           = ""
 # switch_tab           = ""
@@ -128,9 +168,9 @@ previous_tab           = "lb"
 
 # ── Workspaces ──────────────────────────────────────────────────────────
 #
-#  `back` is left unbound on purpose: it is the prefix. Holding it gives
-#  every other input a second meaning, and because nothing is bound to it
-#  directly, pressing it never does anything on its own.
+#  `back` is left unbound on purpose: it is the prefix. Hold it, or tap it
+#  once, to give every other input a second meaning. A prefix button is
+#  ignored as an action in its own right, so binding it here would do nothing.
 #
 next_workspace         = "start"
 previous_workspace     = { input = "start", hold = "back" }
@@ -149,13 +189,14 @@ focus_pane_right       = "dpad_right"
 focus_pane_up          = "dpad_up"
 focus_pane_down        = "dpad_down"
 
-# The prefix layer: hold `back`, then press. Destructive things live here
-# so they cannot happen by accident.
+# The prefix layer: hold or tap `back`, then press. Every one of these is a
+# `prefix+…` binding in your own config.toml — nothing else may live here.
 zoom                   = { input = "a", hold = "back" }
-split_vertical         = { input = "x", hold = "back" }
+split_vertical         = { input = "b", hold = "back" }
 split_horizontal       = { input = "y", hold = "back" }
-close_pane             = { input = "b", hold = "back" }
-# last_pane            = ""
+# close_pane           = ""
+# The one you reach for most, so it gets the free face button.
+last_pane              = { input = "x", hold = "back" }
 # cycle_pane_next      = ""
 # cycle_pane_previous  = ""
 # rename_pane          = ""
@@ -171,10 +212,12 @@ close_pane             = { input = "b", hold = "back" }
 # remove_worktree      = ""
 
 # ── Everything else ─────────────────────────────────────────────────────
-# toggle_sidebar       = ""
+toggle_sidebar         = { input = "lb", hold = "back" }
 # detach               = ""
-# help                 = ""
-# settings             = ""
+# The two panels you open least often live on the triggers: they are analog,
+# so they take a deliberate squeeze past trigger_threshold to fire.
+help                   = { input = "rt", hold = "back" }
+settings               = { input = "lt", hold = "back" }
 # reload_config        = ""
 # edit_scrollback      = ""
 # open_notification_target = ""

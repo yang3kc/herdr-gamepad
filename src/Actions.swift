@@ -49,15 +49,19 @@ final class ActionRunner {
     /// macOS natural-scrolling setting, so this cannot have a right default.
     var scrollInvert = false
 
+    /// `inPrefixMode` says Herdr is already sitting in prefix mode because the
+    /// pad's prefix button put it there, so only the second half of the chord
+    /// is still owed.
     func run(action: String?, method: String?, key: String? = nil,
-             sendKey: String? = nil, params: [String: Any]) {
+             sendKey: String? = nil, params: [String: Any],
+             inPrefixMode: Bool = false) {
         do {
             if let sendKey {
                 try type(sendKey)
                 return
             }
             if let key {
-                try sendHerdrKey(key)
+                try sendHerdrKey(key, inPrefixMode: inPrefixMode)
                 return
             }
             let params = try resolve(params)
@@ -112,13 +116,40 @@ final class ActionRunner {
     /// This is preferred over reimplementing the behaviour over the socket
     /// API: Herdr's own ordering logic runs, so the controller does exactly
     /// what the keyboard does.
-    private func sendHerdrKey(_ name: String) throws {
-        guard let spec = keymap.spec(for: name) else {
+    private func sendHerdrKey(_ name: String, inPrefixMode: Bool = false) throws {
+        // In prefix mode the prefix chord has already gone out, so sending it
+        // again would spend the mode on itself. Only the tail is owed.
+        let spec = inPrefixMode ? keymap.afterPrefix(for: name) : keymap.spec(for: name)
+        guard let spec else {
             throw ConfigError("`\(name)` is not a Herdr keybinding. "
                               + "Check the [keys] section of your config.toml.")
         }
         guard requireAccessibility() else { return }
         Keys.send(try Keys.parse(spec))
+    }
+
+    // MARK: - Herdr's prefix mode
+
+    /// Presses Herdr's prefix chord, putting it into prefix mode for real.
+    ///
+    /// This is what makes a pad prefix button feel like `ctrl+a` rather than a
+    /// state this daemon keeps to itself: Herdr shows the mode, and the next
+    /// press is a plain key.
+    func enterPrefixMode() {
+        guard requireAccessibility() else { return }
+        guard let chords = try? Keys.parse(keymap.prefixChord) else { return }
+        Keys.send(chords)
+    }
+
+    /// Backs out of prefix mode, so a prefix nobody spent does not sit there
+    /// waiting to eat the next thing typed at the keyboard.
+    ///
+    /// Escape is safe to send blind: it only goes out while Herdr is known to
+    /// be in prefix mode, and prefix mode is what consumes it.
+    func leavePrefixMode() {
+        guard requireAccessibility() else { return }
+        guard let chords = try? Keys.parse("escape") else { return }
+        Keys.send(chords)
     }
 
     /// Synthesising input — keys or scroll wheel — needs Accessibility.

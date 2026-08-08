@@ -73,8 +73,91 @@ func runDaemon() {
     var activeTriggers = Set<Int>()
     var repeatTimers: [String: DispatchSourceTimer] = [:]
 
+    // MARK: prefix layers
+    //
+    // A prefix can be reached two ways, and both are live at once:
+    //
+    //   hold  — keep it down and press the second button, as before
+    //   tap   — press and release it alone; the next input goes to the layer
+    //
+    // Tapping needs no new config: the prefix buttons are exactly the ones some
+    // binding already names in `hold`, so any existing preset gains this.
+
+    /// Buttons some binding uses as a `hold` prefix.
+    let prefixButtons = Set(config.bindings.compactMap(\.hold))
+    /// The prefix that was tapped and is waiting for its second button.
+    var armed: Int?
+    var armedTimer: DispatchSourceTimer?
+    /// Prefixes whose current press has already done its job — it opened a hold
+    /// layer, or it cancelled an armed one. Releasing them must not arm.
+    var prefixConsumed = Set<Int>()
+    /// Whether Herdr is sitting in prefix mode because we put it there.
+    ///
+    /// The pad's prefix button sends Herdr's own prefix chord, so the mode is
+    /// real and visible rather than a state this daemon keeps to itself. Herdr's
+    /// prefix is one-shot, so this drops the moment a key spends it — and it is
+    /// what keeps Escape from ever being sent blind into a pane.
+    var herdrPrefixLive = false
+
+    func enterHerdrPrefix() {
+        guard !herdrPrefixLive else { return }
+        runner.enterPrefixMode()
+        herdrPrefixLive = true
+        debugLog("herdr prefix mode: entered")
+    }
+
+    func leaveHerdrPrefix() {
+        guard herdrPrefixLive else { return }
+        runner.leavePrefixMode()
+        herdrPrefixLive = false
+        debugLog("herdr prefix mode: left")
+    }
+
+    func disarm() {
+        armedTimer?.cancel()
+        armedTimer = nil
+        armed = nil
+    }
+
+    /// Drops an armed prefix *and* closes Herdr's, for the paths where nothing
+    /// is going to spend it.
+    func cancelPrefix() {
+        disarm()
+        leaveHerdrPrefix()
+    }
+
+    func arm(_ index: Int) {
+        guard config.prefixTimeoutMs > 0 else {
+            // Tap-to-arm is off, so this press opened nothing. Herdr's prefix
+            // must not be left hanging over the keyboard.
+            leaveHerdrPrefix()
+            return
+        }
+        disarm()
+        armed = index
+        let name = Standard.buttonName(index)
+
+        let timer = DispatchSource.makeTimerSource(queue: .main)
+        timer.schedule(deadline: .now() + .milliseconds(config.prefixTimeoutMs))
+        timer.setEventHandler {
+            debugLog("prefix \(name) expired unused")
+            armed = nil
+            armedTimer = nil
+            leaveHerdrPrefix()
+        }
+        timer.resume()
+        armedTimer = timer
+
+        debugLog("prefix \(name) armed for \(config.prefixTimeoutMs)ms")
+        if config.prefixNotify {
+            herdr.notify("Gamepad: \(name)", body: "Prefix armed — press the next button.")
+        }
+    }
+
     func matches(_ binding: Binding, _ input: Binding.Input) -> Bool {
-        if let hold = binding.hold, !held.contains(hold) { return false }
+        // A hold layer is reachable either by physically holding the prefix or
+        // by having tapped it a moment ago.
+        if let hold = binding.hold, !held.contains(hold), armed != hold { return false }
         // A binding without `hold` must not fire while its own prefix is held,
         // otherwise the prefix layer would trigger both layers at once.
         switch (binding.input, input) {
@@ -85,27 +168,70 @@ func runDaemon() {
         }
     }
 
+    /// Sends one binding with Herdr in the prefix state that binding needs.
+    ///
+    /// The two layers want opposite things. A prefix-layer binding needs Herdr
+    /// waiting in prefix mode, so only the tail of its chord goes out. A base-
+    /// layer one needs it *not* to be waiting, or its key gets swallowed by a
+    /// prefix it never asked for.
+    func deliver(_ binding: Binding) {
+        if binding.hold != nil {
+            enterHerdrPrefix()
+            runner.run(action: binding.action, method: binding.method, key: binding.key,
+                       sendKey: binding.sendKey, params: binding.params, inPrefixMode: true)
+            // Herdr's prefix is one-shot, and that key just spent it.
+            herdrPrefixLive = false
+        } else {
+            leaveHerdrPrefix()
+            runner.run(action: binding.action, method: binding.method, key: binding.key,
+                       sendKey: binding.sendKey, params: binding.params)
+        }
+    }
+
+    /// A held pad prefix outlives Herdr's one-shot one, so re-open it: the next
+    /// press in the layer still lands, and the mode stays visible meanwhile.
+    func reopenHeldPrefix(_ binding: Binding) {
+        guard let hold = binding.hold, held.contains(hold) else { return }
+        enterHerdrPrefix()
+    }
+
     func fire(_ input: Binding.Input, key: String) {
         let candidates = config.bindings.filter { matches($0, input) }
         // Prefer a binding that specifies `hold` — the more specific layer wins.
         guard let binding = candidates.max(by: { ($0.hold == nil ? 0 : 1) < ($1.hold == nil ? 0 : 1) })
         else {
-            debugLog("\(key): no binding  held=\(held.sorted())")
+            debugLog("\(key): no binding  held=\(held.sorted()) armed=\(armed.map(String.init) ?? "-")")
+            // An armed prefix is spent by whatever comes next, even an input the
+            // layer says nothing about. Leaving it armed would silently apply it
+            // to some later, unrelated press — and leaving Herdr's open would
+            // eat the next thing typed at the keyboard.
+            cancelPrefix()
             return
         }
 
         debugLog("\(key) → \(binding.desc ?? "?")  held=\(held.sorted()) "
+                 + "armed=\(armed.map(String.init) ?? "-") "
                  + "candidates=\(candidates.count) hold=\(binding.hold.map(String.init) ?? "-")")
-        runner.run(action: binding.action, method: binding.method, key: binding.key,
-                   sendKey: binding.sendKey, params: binding.params)
+
+        if let hold = binding.hold, held.contains(hold) {
+            // Reached by holding: releasing the prefix now ends a hold, and
+            // must not be mistaken for a tap.
+            prefixConsumed.insert(hold)
+        }
+        // Either this used the armed prefix, or it fell through to the base
+        // layer while one was armed. Both spend it.
+        disarm()
+
+        deliver(binding)
+        reopenHeldPrefix(binding)
 
         guard binding.repeats, repeatTimers[key] == nil else { return }
         let timer = DispatchSource.makeTimerSource(queue: .main)
         timer.schedule(deadline: .now() + .milliseconds(config.repeatDelayMs),
                        repeating: .milliseconds(config.repeatRateMs))
         timer.setEventHandler {
-            runner.run(action: binding.action, method: binding.method, key: binding.key,
-                   sendKey: binding.sendKey, params: binding.params)
+            deliver(binding)
+            reopenHeldPrefix(binding)
         }
         timer.resume()
         repeatTimers[key] = timer
@@ -122,10 +248,40 @@ func runDaemon() {
             let key = "b\(index)"
             if pressed {
                 held.insert(index)
-                fire(.button(index), key: key)
+                guard prefixButtons.contains(index) else {
+                    fire(.button(index), key: key)
+                    break
+                }
+                // A prefix button never fires an action of its own: with both
+                // tap and hold live, "what did that press mean" has to have one
+                // answer, and it is always "open the layer".
+                if armed == index {
+                    // Tapping an armed prefix again backs out of it.
+                    debugLog("prefix \(Standard.buttonName(index)) cancelled")
+                    cancelPrefix()
+                    prefixConsumed.insert(index)
+                } else {
+                    prefixConsumed.remove(index)
+                    // Herdr enters prefix mode now, on the press. That is the
+                    // whole point: the mode shows up the moment your thumb
+                    // lands, exactly as it does for ctrl+a.
+                    enterHerdrPrefix()
+                }
             } else {
                 held.remove(index)
                 stopRepeat(key)
+                if prefixButtons.contains(index) {
+                    // Released without having opened a layer → it was a tap,
+                    // and Herdr stays in prefix mode until the tap is spent.
+                    if !prefixConsumed.contains(index) {
+                        arm(index)
+                    } else if armed == nil {
+                        // A spent hold, or a cancel. Nothing is waiting on
+                        // Herdr's prefix now, so close it.
+                        leaveHerdrPrefix()
+                    }
+                    prefixConsumed.remove(index)
+                }
             }
 
         case let .trigger(index, value):

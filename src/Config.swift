@@ -35,6 +35,17 @@ struct Config {
     var repeatDelayMs: Int = 400
     var repeatRateMs: Int = 80
     var scrollInvert = false
+    /// How long a tapped prefix stays armed, tmux-style. `0` turns tapping off
+    /// and leaves holding as the only way into a prefix layer. There is no
+    /// "never expires" setting on purpose: a pad sits in your lap, and a prefix
+    /// armed since ten minutes ago is a trap.
+    var prefixTimeoutMs: Int = 2000
+    /// Announce an armed prefix through Herdr. Off by default: the prefix is now
+    /// Herdr's own, so Herdr shows the mode itself and this would be a second,
+    /// less reliable copy of the same news — notifications are rate-limited and
+    /// hidden for the focused tab. Turn it on if you want the pad's timeout
+    /// spelled out as well.
+    var prefixNotify = false
 
     /// Where a user's config lives. `HERDR_PLUGIN_CONFIG_DIR` is provided by
     /// Herdr for exactly this purpose; the fallback keeps the binary usable
@@ -57,7 +68,9 @@ struct Config {
         return try parse(try TOML.parse(text))
     }
 
-    static func parse(_ root: [String: Any]) throws -> Config {
+    /// `keymap` is the user's own Herdr bindings, needed to check that a prefix
+    /// layer only holds things Herdr's prefix mode can actually consume.
+    static func parse(_ root: [String: Any], keymap: Keymap = .load()) throws -> Config {
         var profile = Profile()
 
         if let pad = root.table("gamepad") {
@@ -117,6 +130,12 @@ struct Config {
             config.repeatDelayMs = tuning.int("repeat_delay_ms") ?? config.repeatDelayMs
             config.repeatRateMs = tuning.int("repeat_rate_ms") ?? config.repeatRateMs
             config.scrollInvert = tuning.bool("scroll_invert") ?? config.scrollInvert
+            config.prefixTimeoutMs = tuning.int("prefix_timeout_ms") ?? config.prefixTimeoutMs
+            config.prefixNotify = tuning.bool("prefix_notify") ?? config.prefixNotify
+            guard config.prefixTimeoutMs >= 0 else {
+                throw ConfigError("tuning.prefix_timeout_ms must be 0 or more "
+                                  + "(0 disables tap-to-arm, leaving hold-only prefixes)")
+            }
         }
 
         // Two blocks, split by who is being talked to.
@@ -150,7 +169,73 @@ struct Config {
         for (i, entry) in root.tables("bind").enumerated() {
             config.bindings.append(try parseBinding(entry, ordinal: i + 1))
         }
+
+        try checkPrefixLayers(config.bindings, keymap: keymap)
+        try checkSendable(config.bindings, keymap: keymap)
         return config
+    }
+
+    /// A Herdr binding's key also has to be one this daemon can synthesise.
+    ///
+    /// Herdr binds to punctuation — `help = "prefix+?"`, `split_horizontal =
+    /// "prefix+minus"` — so a spec can be perfectly valid for Herdr and still
+    /// name a key we have no code for. `[input]` entries are checked as they
+    /// are parsed; this is the same promise for `[herdr]` ones, which resolve
+    /// through config.toml and so cannot be checked until now.
+    private static func checkSendable(_ bindings: [Binding], keymap: Keymap) throws {
+        for binding in bindings {
+            guard let key = binding.key, let spec = keymap.spec(for: key) else { continue }
+            do {
+                _ = try Keys.parse(spec)
+            } catch {
+                throw ConfigError("\(binding.desc ?? key): `\(key)` is bound to `\(spec)` in your "
+                    + "config.toml, which this plugin cannot type. \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// A gamepad prefix layer *is* Herdr's prefix mode.
+    ///
+    /// Pressing the pad's prefix button sends `ctrl+a` for real, so Herdr lights
+    /// up exactly as it does from the keyboard and the second press is a plain
+    /// key. The price is that the layer can only hold things prefix mode knows
+    /// how to consume. Anything else — a literal keystroke, a socket built-in,
+    /// an action the user bound without the prefix — would be handed to a prefix
+    /// mode that never asked for it and silently swallowed.
+    ///
+    /// Caught here, at startup, rather than at 3am when the button does nothing.
+    private static func checkPrefixLayers(_ bindings: [Binding], keymap: Keymap) throws {
+        for binding in bindings {
+            guard let hold = binding.hold else { continue }
+            let what = binding.desc ?? "binding"
+            let layer = "hold = \"\(Standard.buttonName(hold))\""
+            let why = "That layer puts Herdr into prefix mode (\(keymap.prefixChord)), "
+                    + "which eats the next key."
+
+            if let sendKey = binding.sendKey {
+                throw ConfigError("\(what): \(layer) cannot type `\(sendKey)`. \(why) "
+                    + "The keystroke would go to Herdr, not to the pane. "
+                    + "Bind it without `hold`.")
+            }
+            if let action = binding.action {
+                throw ConfigError("\(what): \(layer) cannot run the built-in `\(action)`. \(why) "
+                    + "Built-ins talk to Herdr over the socket and send no key at all, "
+                    + "so prefix mode would stay open with nothing to close it. "
+                    + "Bind it without `hold`.")
+            }
+            if let method = binding.method {
+                throw ConfigError("\(what): \(layer) cannot call `\(method)`. \(why) "
+                    + "Socket methods send no key, so prefix mode would stay open "
+                    + "with nothing to close it. Bind it without `hold`.")
+            }
+            guard let key = binding.key else { continue }
+            guard keymap.afterPrefix(for: key) == nil else { continue }
+
+            let bound = keymap.spec(for: key).map { "bound to `\($0)`" } ?? "not bound"
+            throw ConfigError("\(what): \(layer) needs a Herdr action reached through the prefix, "
+                + "but `\(key)` is \(bound) in your config.toml. \(why) "
+                + "Either rebind `\(key) = \"prefix+…\"` there, or drop `hold` here.")
+        }
     }
 
     /// Turns one `behaviour = input` line into bindings.

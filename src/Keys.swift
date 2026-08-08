@@ -28,6 +28,23 @@ enum Keys {
         "delete": 51, "escape": 53, "esc": 53,
         "left": 123, "right": 124, "down": 125, "up": 126,
         "pageup": 116, "pagedown": 121, "home": 115, "end": 119,
+        // Punctuation, because Herdr binds to it: `prefix+;` for last_pane,
+        // `prefix+minus` for split_horizontal. Herdr spells that one as a
+        // word, so both forms are here.
+        ";": 41, "'": 39, ",": 43, ".": 47, "/": 44, "`": 50,
+        "-": 27, "minus": 27, "=": 24, "[": 33, "]": 30, "\\": 42,
+    ]
+
+    /// Symbols that are themselves a shifted key on a US layout.
+    ///
+    /// A binding writes the symbol it means — Herdr's `help = "prefix+?"` —
+    /// not `shift+/`. The shift therefore has to come from the character
+    /// rather than from the modifier list.
+    private static let shifted: [String: CGKeyCode] = [
+        "?": 44, ":": 41, "\"": 39, "<": 43, ">": 47, "~": 50,
+        "!": 18, "@": 19, "#": 20, "$": 21, "%": 23, "^": 22,
+        "&": 26, "*": 28, "(": 25, ")": 29,
+        "_": 27, "{": 33, "}": 30, "|": 42,
     ]
 
     private static let modifiers: [String: CGEventFlags] = [
@@ -59,12 +76,15 @@ enum Keys {
             guard let keyName else {
                 throw ConfigError("key spec `\(part)` has modifiers but no key")
             }
-            guard let code = codes[keyName] else {
-                throw ConfigError("unknown key `\(keyName)` in `\(spec)`. "
-                                  + "Known: letters, digits, arrows, "
-                                  + "return, tab, space, escape, delete, pageup, pagedown, home, end")
+            if let code = codes[keyName] {
+                return Chord(code: code, flags: flags)
             }
-            return Chord(code: code, flags: flags)
+            if let code = shifted[keyName] {
+                return Chord(code: code, flags: flags.union(.maskShift))
+            }
+            throw ConfigError("unknown key `\(keyName)` in `\(spec)`. "
+                              + "Known: letters, digits, arrows, punctuation, "
+                              + "return, tab, space, escape, delete, pageup, pagedown, home, end")
         }
     }
 
