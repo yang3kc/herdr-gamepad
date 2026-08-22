@@ -64,7 +64,7 @@ jump to the agent that needs you, pick effort or model, dictate, compact or quit
      ┌──────────┐                    ┌──────────┐
      │ L-STICK  │  ↑↓←→ arrow keys   │ R-STICK  │  ↑↓ scroll
      │  click:  │                    │  click:  │  ←→ focus pane
-     │ overview │                    │  (free)  │
+     │ overview │                    │  space   │
      └──────────┘                    └──────────┘
 ```
 
@@ -76,7 +76,7 @@ Three rules shaped it:
 - **Socket over keystrokes wherever possible.** The D-pad, triggers, View, Menu, Y, L3
   and the Xbox button go through Herdr's socket — no Accessibility permission, and they
   land in the Herdr-focused pane even when another app is frontmost. Only Return /
-  Escape / Tab, Shift+Tab, the arrows and the dictation toggle are synthetic keys.
+  Escape / Tab, Shift+Tab, Space, the arrows and the dictation toggle are synthetic keys.
 - **Real buttons for the most-pressed actions**, stick clicks for the rare ones.
 
 It assumes macOS, Herdr 0.8.2, this fork, an Xbox Series X|S over Bluetooth, Claude Code

@@ -13,7 +13,7 @@
 #    Share     Consumer page 0x0C, usage 0xB2 (178)
 #
 #  Usable: 16 buttons + 2 triggers + both sticks (4 directions each).
-#  Everything is bound below except R3.
+#  Everything is bound below.
 
 [gamepad]
 vendor  = 0x045E
@@ -81,6 +81,8 @@ return      = "a"       # approve a Claude Code confirmation
 escape      = "b"       # deny / cancel / interrupt the current turn
 tab         = "x"
 "shift+tab" = "share"   # cycle Claude Code permission modes
+space       = "r3"      # right stick click: toggle an item in Claude Code's
+                        # multi-select dialogs (the one dialog key the pad lacked)
 
 # RT = toggle superwhisper recording, by sending its Toggle hotkey. A trigger
 # counts as pressed past trigger_threshold and fires once per squeeze. The
@@ -221,6 +223,4 @@ params = { plugin_id = "padkit", action_id = "focus_terminal" }
 
 
 # ── Free inputs ──────────────────────────────────────────────────────────
-#  R3 (right stick click) — unbound since voice moved to RT. Candidate:
-#  "space" in [input], the toggle key in Claude Code's multi-select dialogs,
-#  which the pad cannot press today.
+#  None. R3 was the last one; it took `space` in [input] on 2026-08-22.

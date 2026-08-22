@@ -70,7 +70,7 @@ without the first six.
      ┌──────────┐                    ┌──────────┐
      │ L-STICK  │  ↑↓←→ arrow keys   │ R-STICK  │  ↑↓ scroll
      │  click:  │                    │  click:  │  ←→ focus pane
-     │ overview │                    │  (free)  │
+     │ overview │                    │  space   │
      └──────────┘                    └──────────┘
 ```
 
@@ -88,7 +88,7 @@ without the first six.
 | **D-pad ↑** | Type `/` into the focused pane — Claude Code's command menu opens; pick with the left stick and A | socket |
 | **D-pad ←** / **→** / **↓** | Type `/compact` / `/clear` / `/exit` into the focused pane — **A runs it, B clears it** | socket |
 | **L3** | Notification listing every agent's state (`agent_overview`) | socket |
-| **R3** | Free | — |
+| **R3** | Space — toggle an item in Claude Code's multi-select dialogs | key |
 | **Left stick** | Arrow keys, auto-repeating — move the selection in a dialog or a picker | key |
 | **Right stick** ↑↓ | Mouse wheel — scrolls Herdr's scrollback. Stick up scrolls the view down, like a trackpad | wheel |
 | **Right stick** ←→ | Focus the pane to the left / right (`pane.focus_direction`) | socket |
@@ -107,7 +107,7 @@ permission, and it reaches the Herdr-focused pane whatever app is frontmost.
    (`agent_not_ready`), so a stray press types nothing.
 2. **Socket over keystrokes wherever possible.** Everything on the D-pad, LT, View,
    Menu, Y, L3 and the Xbox button goes through the socket. Only Return / Escape / Tab,
-   Shift+Tab, the arrows, scrolling and the dictation hotkey are synthetic keys.
+   Shift+Tab, Space, the arrows, scrolling and the dictation hotkey are synthetic keys.
 3. **Real buttons for the most-pressed actions**, stick clicks for the rare ones.
    Dictation started on a stick click and moved to RT for that reason.
 
