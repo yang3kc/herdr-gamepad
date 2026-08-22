@@ -1,0 +1,17 @@
+# A keys-only copy of ~/.config/herdr/config.toml, for herdr-gamepad only.
+#
+# Why this file exists: the plugin ships a minimal TOML reader that does not
+# handle multi-line arrays. The real config.toml has one (`rows = [...]` under
+# [ui.sidebar.spaces], line 16), so the parser throws and the plugin silently
+# falls back to its own guessed defaults — it sent `shift+down` for next_agent
+# instead of your `prefix+a`. Pointing HERDR_CONFIG_PATH at this stripped copy
+# gives it the [keys] block it needs.
+#
+# KEEP IN SYNC with ~/.config/herdr/config.toml when you rebind anything.
+
+[keys]
+prefix = "ctrl+t"
+
+next_agent     = "prefix+a"
+previous_agent = "prefix+shift+a"
+detach         = "prefix+d"

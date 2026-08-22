@@ -1,0 +1,18 @@
+id = "padkit"
+name = "Padkit"
+version = "0.1.0"
+min_herdr_version = "0.7.0"
+description = "Shell actions the gamepad can reach over the herdr socket."
+platforms = ["macos"]
+
+# Why this plugin exists: herdr-gamepad can call any socket method from a
+# [[bind]], but it has no shell action. plugin.action.invoke is the socket
+# method that runs one — and because it goes over the socket, it works no
+# matter which macOS app is frontmost. That is the whole point of
+# focus_terminal: when focus has drifted to another app, every synthetic
+# keystroke from the pad would land in the wrong window, but this still works.
+
+[[actions]]
+id = "focus_terminal"
+title = "Padkit: bring the terminal running herdr to the front"
+command = ["bash", "focus-terminal.sh"]

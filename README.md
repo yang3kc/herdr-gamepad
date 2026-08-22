@@ -36,9 +36,53 @@ Bluetooth Xbox Series X|S pad needs to be fully usable:
   in a `[[bind]]`); `tab_next` / `tab_previous`; `workspace_next` / `workspace_previous`.
 - Learn mode names the HID page of anything that is not on the Button or Generic
   Desktop page, and setup skips the four D-pad prompts when the pad has a hat switch.
+- A complete, copy-able setup for a Bluetooth Xbox Series X|S driving Claude Code
+  agents — see the next section.
 
 Install from this fork with `herdr plugin install yang3kc/herdr-gamepad`, or clone it and
-`herdr plugin link <path>`. Everything below is upstream's documentation and still applies.
+`herdr plugin link <path>`. Everything after the next section is upstream's documentation
+and still applies.
+
+## Example: an Xbox Series X|S as a desk-side supervisor for Claude Code agents
+
+This is the layout I run — Bluetooth Xbox Series X|S, macOS, Herdr with several Claude
+Code panes. The keyboard stays primary; the pad is for the off hand: approve or deny,
+jump to the agent that needs you, pick effort or model, dictate, compact or quit.
+
+```
+        LB ──────────────┐              ┌────────────── RB
+     prev agent          │              │           next agent
+        LT  zoom pane                                RT  voice
+
+        ┌──────────┐                        ┌────────┐
+        │  D-PAD   │    ⧉ View   ≡ Menu     │   Y    │  next waiting agent
+        │ ↑ /menu  │    model    effort     │ X    B │  Tab      Esc
+        │ ←compact │        ⊕ Xbox          │   A    │  Return
+        │ clear  → │    focus terminal      └────────┘
+        │ ↓ quit   │     Share: shift+tab
+        └──────────┘     (permission mode)
+     ┌──────────┐                    ┌──────────┐
+     │ L-STICK  │  ↑↓←→ arrow keys   │ R-STICK  │  ↑↓ scroll
+     │  click:  │                    │  click:  │  ←→ focus pane
+     │ overview │                    │  (free)  │
+     └──────────┘                    └──────────┘
+```
+
+Three rules shaped it:
+
+- **Nothing destructive fires on one press.** The D-pad only *types* `/compact`,
+  `/clear`, `/exit` into the input box; A runs it, B clears it. The two pickers
+  (`/effort`, `/model`) are submitted, because opening a picker is harmless.
+- **Socket over keystrokes wherever possible.** The D-pad, triggers, View, Menu, Y, L3
+  and the Xbox button go through Herdr's socket — no Accessibility permission, and they
+  land in the Herdr-focused pane even when another app is frontmost. Only Return /
+  Escape / Tab, Shift+Tab, the arrows and the dictation toggle are synthetic keys.
+- **Real buttons for the most-pressed actions**, stick clicks for the rare ones.
+
+Copy [`examples/xbox-series-claude-code/`](examples/xbox-series-claude-code/). Its README
+walks through the measured HID profile for this pad, every binding, the install steps,
+and the three macOS things that are not obvious (launchd for Accessibility, the Game
+Overlay, Karabiner seizing the pad).
 
 ## The default layout
 

@@ -1,0 +1,226 @@
+#  gamepad.toml — Xbox Series X|S over Bluetooth
+#
+#  Written 2026-08-22 after probing the pad's raw HID output. The built-in
+#  `xbox360` preset does NOT fit this pad, so the profile below is explicit.
+#  Measured usages, not guessed.
+#
+#  Runs on the fork yang3kc/herdr-gamepad, linked locally from
+#  ~/working/agent_space/git_repos/standalone/herdr-gamepad. The fork reads
+#  the three inputs the upstream plugin cannot see on this pad:
+#    D-pad     GenericDesktop hat switch 0x39 — decoded into dpad_* by the
+#              plugin itself, so it needs no profile entry
+#    LT / RT   Simulation page 0x02, Brake 0xC5 / Accelerator 0xC4 (0…1023)
+#    Share     Consumer page 0x0C, usage 0xB2 (178)
+#
+#  Usable: 16 buttons + 2 triggers + both sticks (4 directions each).
+#  Everything is bound below except R3.
+
+[gamepad]
+vendor  = 0x045E
+product = 0x0B13
+
+[profile.buttons]
+1   = "a"
+2   = "b"
+4   = "x"
+5   = "y"
+7   = "lb"
+8   = "rb"
+11  = "back"     # View  ⧉
+12  = "start"    # Menu  ≡
+13  = "guide"    # Xbox button
+14  = "l3"
+15  = "r3"
+178 = "share"    # Consumer page 0xB2 — the Share button below the Xbox button
+# D-pad: no entry. It is a hat switch and the plugin decodes it on its own.
+
+[profile.axes]
+X  = "left_x"
+Y  = "left_y"
+Z  = "right_x"   # NOT a trigger on this pad — 16-bit right stick
+Rz = "right_y"
+Brake       = "lt"   # Simulation page 0xC5 — left trigger
+Accelerator = "rt"   # Simulation page 0xC4 — right trigger
+
+[tuning]
+deadzone          = 0.35   # raised: this pad's left stick idles near 32000/65535
+trigger_threshold = 0.5    # how far LT/RT must be squeezed to count as pressed
+repeat_delay_ms   = 400
+repeat_rate_ms    = 80
+scroll_invert     = false
+prefix_timeout_ms = 0      # no prefix layer
+prefix_notify     = false
+
+
+# ── [herdr] — sent as your own keybinding, or run over the socket ────────
+[herdr]
+
+next_agent     = "rb"     # ADJUST: sent as YOUR herdr next_agent key (prefix+a here)
+previous_agent = "lb"     # ADJUST: same, previous_agent (prefix+shift+a here)
+
+# Built-ins this plugin adds — these talk over the socket, no keys involved.
+agent_next_waiting = "y"      # jump to an agent that stopped for you
+agent_overview     = "l3"     # left stick click: notification listing every
+                              # agent's state.
+# agent_back was on View. It lost the button to the effort picker below:
+# LB/RB already cycle agents in order and Y jumps to whichever is waiting.
+
+# D-pad down (quit) is a [[bind]] below: it only TYPES `/exit`, you press A.
+# The fork's agent_quit built-in (Escape, /exit, Enter in one press) is not
+# used here on purpose — see the slash-command block.
+
+# Workspace cycling (workspace_previous / workspace_next, fork built-ins)
+# sat on LT / RT for an afternoon and was not needed. Unbound.
+
+
+# ── [input] — synthetic keystrokes to the frontmost window ───────────────
+#  Needs Accessibility permission for the herdr-gamepad binary.
+[input]
+
+return      = "a"       # approve a Claude Code confirmation
+escape      = "b"       # deny / cancel / interrupt the current turn
+tab         = "x"
+"shift+tab" = "share"   # cycle Claude Code permission modes
+
+# RT = toggle superwhisper recording, by sending its Toggle hotkey. A trigger
+# counts as pressed past trigger_threshold and fires once per squeeze. The
+# toggle was on Menu, then briefly on R3; a real button under the index finger
+# suits the pad's most-pressed action better than a stick click.
+#
+# Must match superwhisper Settings -> Shortcuts -> Toggle. Read the current
+# value with:
+#   defaults read com.superduper.superwhisper KeyboardShortcuts_toggleRecording
+# (carbonKeyCode 13 + carbonModifiers 4096 is ctrl+w.)
+#
+# ctrl+w is also the terminal's delete-previous-word. superwhisper registers it
+# as a global hotkey and intercepts it first, so the terminal never sees it —
+# but that also means you cannot delete a word by hand while superwhisper runs.
+# This plugin cannot type F-keys, so a letter chord is the only option here.
+"ctrl+w" = "rt"         # ADJUST: your dictation app's toggle hotkey (superwhisper here)
+
+# Slash commands (/effort, /compact, /clear, /model) are NOT typed as keys
+# any more — see the agent.prompt [[bind]] entries below. Typing them here
+# would also work ("/ e f f o r t return" = "back" did, before the fork), but
+# keys go to whatever window is frontmost and, worse, Return would approve an
+# open permission dialog. agent.prompt refuses a blocked agent instead.
+
+# Left stick = arrow keys. Moves the selection in a confirmation dialog.
+#
+# NOTE the swapped names. The plugin calls a POSITIVE axis value "_up", but
+# this pad reports a stick pushed up as the LOW end of the range. So the name
+# `left_down` is the stick physically pushed UP. Verified with `cat -v`:
+# `right_up` produced the Down-arrow escape sequence. Left/right are correct.
+up    = { input = "left_down",  repeat = true }   # stick physically up
+down  = { input = "left_up",    repeat = true }   # stick physically down
+left  = { input = "left_left",  repeat = true }
+right = { input = "left_right", repeat = true }
+
+# Right stick up/down = real mouse wheel, so it scrolls herdr's scrollback.
+# Deliberately reversed relative to the arrow keys above: pushing the stick up
+# scrolls the view DOWN, the way a trackpad with natural scrolling behaves.
+scroll_up   = { input = "right_up",   repeat = true }   # stick physically down
+scroll_down = { input = "right_down", repeat = true }   # stick physically up
+
+
+# ── Raw socket calls ─────────────────────────────────────────────────────
+#  These need no keybinding and no Accessibility permission.
+
+# ── Claude Code slash commands, to the herdr-focused pane ────────────────
+#  "$focused" is the focused pane id (works since the fork). Two flavours:
+#
+#  SUBMITTED  (agent.prompt — types the text and presses Enter). Used for the
+#  two pickers, which are harmless to open. herdr refuses when the pane's
+#  agent is blocked on a dialog (agent_blocked) or the pane's foreground
+#  process is not the agent (agent_not_ready); both surface as a "Gamepad
+#  error" notification and nothing is typed. Verified 2026-08-22: both
+#  pickers opened in a live Claude Code pane.
+#
+#  TYPED ONLY (pane.send_text — puts the text in the input box, no Enter).
+#  Used for the three commands that change or end the session: /compact,
+#  /clear, /exit. You read it, then press A to run it, or B to back out.
+#  No Enter means nothing can be approved by accident, which is why these
+#  do not need the agent checks or a leading Escape.
+#
+#  Zoom stays on the keyboard (prefix+z).
+
+[[bind]]
+desc   = "Menu: open Claude Code's effort picker (choose with the left stick + A)"
+button = "start"
+method = "agent.prompt"
+params = { target = "$focused", text = "/effort" }
+
+[[bind]]
+desc   = "View: open Claude Code's model picker"
+button = "back"
+method = "agent.prompt"
+params = { target = "$focused", text = "/model" }
+
+[[bind]]
+desc   = "D-pad up: type / — opens Claude Code's command menu; pick with the left stick + A"
+button = "dpad_up"
+method = "pane.send_text"
+params = { pane_id = "$focused", text = "/" }
+
+[[bind]]
+desc   = "D-pad left: type /compact (press A to run it)"
+button = "dpad_left"
+method = "pane.send_text"
+params = { pane_id = "$focused", text = "/compact" }
+
+[[bind]]
+desc   = "D-pad right: type /clear (press A to run it)"
+button = "dpad_right"
+method = "pane.send_text"
+params = { pane_id = "$focused", text = "/clear" }
+
+[[bind]]
+desc   = "D-pad down: type /exit (press A to quit the agent session)"
+button = "dpad_down"
+method = "pane.send_text"
+params = { pane_id = "$focused", text = "/exit" }
+
+[[bind]]
+desc   = "LT: toggle zoom on the focused pane"
+trigger = "lt"
+method = "pane.zoom"
+params = { mode = "toggle" }
+# Zoom in to read one agent, scroll with the right stick, zoom out. Socket
+# call, so it works without Accessibility and whatever app is frontmost.
+
+[[bind]]
+desc   = "right stick left: focus the pane to the left"
+axis      = "right_x"
+direction = "-"
+method = "pane.focus_direction"
+params = { direction = "left" }
+
+[[bind]]
+desc   = "right stick right: focus the pane to the right"
+axis      = "right_x"
+direction = "+"
+method = "pane.focus_direction"
+params = { direction = "right" }
+
+[[bind]]
+desc   = "Xbox button: bring the terminal running herdr to the front"
+button = "guide"
+method = "plugin.action.invoke"
+params = { plugin_id = "padkit", action_id = "focus_terminal" }
+# This has to be a socket call rather than a keystroke, and that is the whole
+# point: you press it exactly when focus has drifted to another app, which is
+# when every [input] binding would be typing into the wrong window.
+#
+# The Xbox button used to be unusable — macOS opened its Game Overlay and
+# swallowed the press. That is now switched off in
+# System Settings -> Game Controllers, so the button behaves like any other.
+# The daemon always received the HID press regardless; only keystrokes suffered.
+#
+# ADJUST: needs the padkit companion plugin (herdr/padkit/ next to this file;
+# `herdr plugin link <that folder>`). PADKIT_TERMINAL_APP names the terminal
+# to bring forward (default Warp).
+
+
+# ── Free inputs ──────────────────────────────────────────────────────────
+#  R3 (right stick click) — unbound since voice moved to RT. Candidate:
+#  "space" in [input], the toggle key in Claude Code's multi-select dialogs,
+#  which the pad cannot press today.
