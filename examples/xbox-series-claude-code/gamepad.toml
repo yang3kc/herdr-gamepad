@@ -53,6 +53,17 @@ prefix_notify     = false
 
 
 # ── [herdr] — sent as your own keybinding, or run over the socket ────────
+[haptics]
+# Rumble when an agent needs a human. The daemon polls `agent.list` every
+# poll_ms and buzzes on a pane's transition into `blocked` (a prompt is
+# waiting) or `done` (finished, not yet looked at). Patterns: off, single,
+# double, triple, long. Needs no extra permission; the pad must be awake.
+enabled        = true
+poll_ms        = 500
+blocked        = "double"
+done           = "single"
+ignore_focused = false    # true: no buzz for the pane you are already looking at
+
 [herdr]
 
 next_agent     = "rb"     # ADJUST: sent as YOUR herdr next_agent key (prefix+a here)

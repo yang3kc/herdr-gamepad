@@ -34,6 +34,13 @@ Bluetooth Xbox Series X|S pad needs to be fully usable:
 - **New built-ins.** `agent_quit` — Escape, then `/exit` and Enter, sent to the focused
   agent's pane over the socket (override the command with `params = { command = "…" }`
   in a `[[bind]]`); `tab_next` / `tab_previous`; `workspace_next` / `workspace_previous`.
+- **Rumble.** `[haptics] enabled = true` makes the pad buzz when an agent becomes
+  `blocked` (a prompt is waiting) or `done` (finished, not yet looked at). The daemon
+  polls `agent.list` every `poll_ms` (default 500) and plays a named pattern on the grip
+  motors through Apple's GameController / CoreHaptics, next to its IOKit reader:
+  `blocked = "double"`, `done = "single"` (also `off`, `triple`, `long`);
+  `ignore_focused = true` skips the pane you are looking at. No extra permission.
+  `bin/herdr-gamepad rumble double` plays one pattern, to check that the motors answer.
 - Learn mode names the HID page of anything that is not on the Button or Generic
   Desktop page, and setup skips the four D-pad prompts when the pad has a hat switch.
 - A complete, copy-able setup for a Bluetooth Xbox Series X|S driving Claude Code
@@ -47,7 +54,8 @@ and still applies.
 
 This is the layout I run — Bluetooth Xbox Series X|S, macOS, Herdr with several Claude
 Code panes. The keyboard stays primary; the pad is for the off hand: approve or deny,
-jump to the agent that needs you, pick effort or model, dictate, compact or quit.
+jump to the agent that needs you, pick effort or model, dictate, compact or quit — and
+feel a buzz when an agent blocks on a prompt or finishes.
 
 ```
         LB ──────────────┐              ┌────────────── RB
@@ -242,6 +250,7 @@ In `params`, `"$focused"` becomes the pane that currently has focus.
 | `gamepad.start` | start the daemon |
 | `gamepad.stop` | stop the daemon |
 | `gamepad.status` | connected pads, daemon state |
+| `gamepad.rumble` | play a double pulse — do the motors answer? (this fork) |
 
 Herdr 0.7 does not bind keys declared in a plugin manifest, and actions run without a TTY
 — which is why every interactive flow reports through notifications instead of printing to

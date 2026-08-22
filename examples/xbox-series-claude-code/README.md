@@ -112,8 +112,17 @@ permission, and it reaches the Herdr-focused pane whatever app is frontmost.
    Dictation started on a stick click and moved to RT for that reason.
 
 Deliberately absent: Ctrl-C (a second one exits Claude Code; B interrupts, D-pad ↓ then
-A quits), workspace and tab switching (tried on the triggers, not needed), and rumble
-(not in the plugin yet).
+A quits) and workspace and tab switching (tried on the triggers, not needed).
+
+## Rumble
+
+`[haptics]` in `gamepad.toml` is the attention signal: two strong pulses on the grips when
+any agent becomes `blocked` (a permission prompt or question is waiting), one short pulse
+when one becomes `done` (finished, not yet looked at). The daemon polls `agent.list` every
+500 ms and plays the pattern through GameController / CoreHaptics next to its IOKit
+reader — no extra permission, the pad only has to be awake. Two buzzes are at least one
+second apart. `ignore_focused = true` skips the pane you are already looking at. Every
+buzz is one line in the daemon log; `bin/herdr-gamepad rumble double` plays one on demand.
 
 ## The profile
 
@@ -185,6 +194,7 @@ stripped keys-only copy instead. Keep that copy in sync when you rebind anything
 launchctl kickstart -k gui/$(id -u)/dev.herdr.gamepad   # restart — the daemon reads gamepad.toml only at start
 launchctl bootout   gui/$(id -u)/dev.herdr.gamepad      # stop the pad
 herdr plugin action invoke gamepad.learn                # what does this button send? (2 min)
+bin/herdr-gamepad rumble double                         # do the motors answer?
 ```
 
 `GAMEPAD_DEBUG=1` in the plist's `EnvironmentVariables` logs every press to
