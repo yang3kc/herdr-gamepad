@@ -56,8 +56,10 @@ prefix_notify     = false
 [haptics]
 # Rumble when an agent needs a human. The daemon polls `agent.list` every
 # poll_ms and buzzes on a pane's transition into `blocked` (a prompt is
-# waiting) or `done` (finished, not yet looked at). Patterns: off, single,
-# double, triple, long. Needs no extra permission; the pad must be awake.
+# waiting), into `done` (finished, not yet looked at), or from `working`
+# straight to `idle` (herdr says idle, not done, when the pane was on screen
+# as the agent finished). Patterns: off, single, double, triple, long.
+# Needs no extra permission; the pad must be awake.
 enabled        = true
 poll_ms        = 500
 blocked        = "double"

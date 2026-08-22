@@ -145,8 +145,10 @@ final class Haptics {
 }
 
 /// Polls Herdr for agent statuses and rumbles on the transitions a human
-/// wants to know about: an agent becoming `blocked` (waiting on a prompt)
-/// or `done` (finished, not yet looked at).
+/// wants to know about: an agent becoming `blocked` (waiting on a prompt),
+/// `done` (finished, not yet looked at), or going straight from `working`
+/// to `idle` — which is what Herdr reports when the pane was on screen as
+/// the agent finished, so no `done` ever shows up for it.
 ///
 /// Polling rather than `events.subscribe`, on purpose: one `agent.list` every
 /// half second on a local socket costs nothing, needs no per-pane
@@ -214,6 +216,9 @@ final class AgentWatcher {
             switch a.status {
             case "blocked": pattern = settings.blocked
             case "done":    pattern = settings.done
+            // Finished while its pane was on screen: Herdr says `idle`, not
+            // `done`. Same news for the hand on the pad.
+            case "idle" where before == "working": pattern = settings.done
             default:        continue
             }
             // Several transitions in one tick: the blocked one wins.

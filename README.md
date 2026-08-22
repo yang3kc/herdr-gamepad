@@ -35,7 +35,8 @@ Bluetooth Xbox Series X|S pad needs to be fully usable:
   agent's pane over the socket (override the command with `params = { command = "…" }`
   in a `[[bind]]`); `tab_next` / `tab_previous`; `workspace_next` / `workspace_previous`.
 - **Rumble.** `[haptics] enabled = true` makes the pad buzz when an agent becomes
-  `blocked` (a prompt is waiting) or `done` (finished, not yet looked at). The daemon
+  `blocked` (a prompt is waiting) or finishes (`done`, or `idle` straight from `working`,
+  which is what Herdr reports when the pane was on screen at the time). The daemon
   polls `agent.list` every `poll_ms` (default 500) and plays a named pattern on the grip
   motors through Apple's GameController / CoreHaptics, next to its IOKit reader:
   `blocked = "double"`, `done = "single"` (also `off`, `triple`, `long`);

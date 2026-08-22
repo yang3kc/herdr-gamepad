@@ -118,7 +118,8 @@ A quits) and workspace and tab switching (tried on the triggers, not needed).
 
 `[haptics]` in `gamepad.toml` is the attention signal: two strong pulses on the grips when
 any agent becomes `blocked` (a permission prompt or question is waiting), one short pulse
-when one becomes `done` (finished, not yet looked at). The daemon polls `agent.list` every
+when one finishes — `done`, or `working → idle`, which is what Herdr reports when the pane
+was on screen at the time (no `done` ever shows up for it). The daemon polls `agent.list` every
 500 ms and plays the pattern through GameController / CoreHaptics next to its IOKit
 reader — no extra permission, the pad only has to be awake. Two buzzes are at least one
 second apart. `ignore_focused = true` skips the pane you are already looking at. Every
