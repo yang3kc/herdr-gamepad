@@ -7,6 +7,7 @@ herdr-gamepad — drive Herdr with a game controller
   learn     press anything, see what it is (no config changes)
   daemon    run the mapped bindings
   status    show controller, config and daemon state
+  rumble    play a haptic pattern on the pad: rumble [off|single|double|triple|long]
 
 Feedback appears as Herdr notifications, because plugin actions run
 without a terminal attached.
@@ -22,6 +23,11 @@ let debugEnabled = ProcessInfo.processInfo.environment["GAMEPAD_DEBUG"] == "1"
 
 func debugLog(_ message: String) {
     guard debugEnabled else { return }
+    infoLog(message)
+}
+
+/// Always written. Used for the rare, worth-keeping lines: haptics events.
+func infoLog(_ message: String) {
     let stamp = ISO8601DateFormatter().string(from: Date())
     FileHandle.standardError.write("[\(stamp)] \(message)\n".data(using: .utf8)!)
 }
@@ -37,6 +43,7 @@ case "daemon":  runDaemon()
 case "learn":   runLearn()
 case "setup":   runSetup()
 case "status":  runStatus()
+case "rumble":  runRumble()
 case "-h", "--help", "help": print(usage)
 default:
     FileHandle.standardError.write("unknown mode `\(mode)`\n\n\(usage)\n".data(using: .utf8)!)
@@ -316,8 +323,28 @@ func runDaemon() {
         exit(1)
     }
 
-    herdr.notify("Gamepad ready", body: "\(config.bindings.count) bindings active.")
-    CFRunLoopRun()
+    // Rumble on agent status changes. Its own HerdrClient, because the
+    // watcher polls on a background queue and the shared client is not
+    // built for two threads.
+    var haptics: Haptics?
+    var watcher: AgentWatcher?
+    if config.haptics.enabled {
+        let h = Haptics()
+        h.onLog = infoLog
+        let w = AgentWatcher(herdr: HerdrClient(socketPath: herdr.socketPath),
+                             haptics: h, settings: config.haptics)
+        w.onLog = infoLog
+        w.start()
+        haptics = h
+        watcher = w
+    }
+
+    herdr.notify("Gamepad ready",
+                 body: "\(config.bindings.count) bindings active"
+                       + (config.haptics.enabled ? ", rumble on." : "."))
+    withExtendedLifetime((haptics, watcher)) {
+        CFRunLoopRun()
+    }
 }
 
 // MARK: - learn
@@ -391,6 +418,11 @@ func runStatus() {
             lines.append("profile:     \(config.profile.buttons.count) buttons, "
                          + "\(config.profile.axes.count) axes, \(config.profile.triggers.count) triggers "
                          + "(a hat-switch D-pad is decoded without a profile entry)")
+            let h = config.haptics
+            lines.append("haptics:     " + (h.enabled
+                ? "on — blocked=\(h.blocked.rawValue), done=\(h.done.rawValue), poll \(h.pollMs) ms"
+                  + (h.ignoreFocused ? ", focused pane ignored" : "")
+                : "off ([haptics] enabled = true turns it on)"))
         } catch {
             lines.append("config:      INVALID — \(error.localizedDescription)")
         }
@@ -406,6 +438,33 @@ func runStatus() {
     print(output)
     herdr.notify(devices.isEmpty ? "Gamepad: no controller" : "Gamepad: \(devices.count) connected",
                  body: lines.dropFirst().joined(separator: " · "))
+}
+
+// MARK: - rumble
+
+/// `herdr-gamepad rumble [pattern]` — play one pattern and exit. The quickest
+/// way to check that the pad's motors answer from this machine at all.
+func runRumble() {
+    let name = CommandLine.arguments.count > 2 ? CommandLine.arguments[2] : "double"
+    guard let pattern = HapticPattern(rawValue: name) else {
+        FileHandle.standardError.write("unknown pattern `\(name)`; use one of: \(HapticPattern.names)\n".data(using: .utf8)!)
+        exit(2)
+    }
+    let haptics = Haptics()
+    haptics.onLog = { print($0) }
+    // Pairing is already done; the framework just needs a few run-loop turns
+    // to hand us the controller.
+    let deadline = Date().addingTimeInterval(3)
+    while !haptics.isReady, Date() < deadline {
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+    }
+    guard haptics.isReady else {
+        print("no controller with haptics found (is the pad awake? press the Xbox button)")
+        exit(1)
+    }
+    haptics.play(pattern)
+    print("playing \(pattern.rawValue)")
+    RunLoop.main.run(until: Date().addingTimeInterval(pattern.totalDuration + 0.5))
 }
 
 // MARK: - setup

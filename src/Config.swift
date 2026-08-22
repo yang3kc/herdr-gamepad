@@ -46,6 +46,8 @@ struct Config {
     /// hidden for the focused tab. Turn it on if you want the pad's timeout
     /// spelled out as well.
     var prefixNotify = false
+    /// Rumble on agent status changes; see `[haptics]` and Haptics.swift.
+    var haptics = AgentWatcher.Settings()
 
     /// Where a user's config lives. `HERDR_PLUGIN_CONFIG_DIR` is provided by
     /// Herdr for exactly this purpose; the fallback keeps the binary usable
@@ -141,6 +143,26 @@ struct Config {
             guard config.prefixTimeoutMs >= 0 else {
                 throw ConfigError("tuning.prefix_timeout_ms must be 0 or more "
                                   + "(0 disables tap-to-arm, leaving hold-only prefixes)")
+            }
+        }
+
+        // [haptics] — rumble when an agent becomes blocked or done. Off unless
+        // asked for: it opens a second (GameController) handle on the pad.
+        if let table = root.table("haptics") {
+            config.haptics.enabled = table.bool("enabled") ?? config.haptics.enabled
+            config.haptics.pollMs = table.int("poll_ms") ?? config.haptics.pollMs
+            config.haptics.ignoreFocused = table.bool("ignore_focused") ?? config.haptics.ignoreFocused
+            for (key, keyPath) in [("blocked", \AgentWatcher.Settings.blocked),
+                                   ("done", \AgentWatcher.Settings.done)] {
+                guard let name = table.string(key) else { continue }
+                guard let pattern = HapticPattern(rawValue: name) else {
+                    throw ConfigError("haptics.\(key) = \"\(name)\" is not a pattern; "
+                                      + "use one of: \(HapticPattern.names)")
+                }
+                config.haptics[keyPath: keyPath] = pattern
+            }
+            guard config.haptics.pollMs >= 100 else {
+                throw ConfigError("haptics.poll_ms must be 100 or more")
             }
         }
 
