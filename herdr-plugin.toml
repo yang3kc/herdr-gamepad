@@ -2,7 +2,7 @@ id = "gamepad"
 name = "Gamepad"
 version = "0.3.0"
 min_herdr_version = "0.7.0"
-description = "Drive Herdr with a game controller. Patrol your AI agents, split panes, and switch workspaces from the couch — any gamepad, mapped by you in 60 seconds."
+description = "Drive Herdr with a game controller. Patrol your AI agents, split panes, and switch workspaces from the couch — any gamepad, mapped by you in 60 seconds. Rumbles when an agent needs you."
 platforms = ["macos"]
 
 # Build a single dependency-free binary. Swift ships with macOS developer tools,

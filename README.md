@@ -34,26 +34,64 @@ Bluetooth Xbox Series X|S pad needs to be fully usable:
 - **New built-ins.** `agent_quit` — Escape, then `/exit` and Enter, sent to the focused
   agent's pane over the socket (override the command with `params = { command = "…" }`
   in a `[[bind]]`); `tab_next` / `tab_previous`; `workspace_next` / `workspace_previous`.
-- **Rumble.** `[haptics] enabled = true` makes the pad buzz when an agent becomes
-  `blocked` (a prompt is waiting) or finishes (`done`, or `idle` straight from `working`,
-  which is what Herdr reports when the pane was on screen at the time). The daemon
-  polls `agent.list` every `poll_ms` (default 500) and plays a pattern through Apple's
-  GameController / CoreHaptics, next to its IOKit reader. A pattern is a preset
-  (`single` = 350 ms, `double` = 300/150/300, `triple`, `long` = 800 ms, `off`) or on/off
-  lengths in ms (`blocked = [400, 150, 400]`); `intensity` and `sharpness` (0–1) and
-  `locality` (`handles` | `left_handle` | `right_handle` | `triggers` | `all`) set the
-  strength and the motors; `ignore_focused = true` skips the pane you are looking at.
-  No extra permission. `bin/herdr-gamepad rumble [pattern] [locality] [intensity]
-  [sharpness]` plays one pattern, with the config's values for anything left out, so
-  you can compare settings before writing them down.
+- **Rumble.** The pad buzzes when an agent blocks on a prompt or finishes, so you can
+  look away from the screen. See [Rumble](#rumble-this-fork) below.
 - Learn mode names the HID page of anything that is not on the Button or Generic
   Desktop page, and setup skips the four D-pad prompts when the pad has a hat switch.
 - A complete, copy-able setup for a Bluetooth Xbox Series X|S driving Claude Code
   agents — see the next section.
 
 Install from this fork with `herdr plugin install yang3kc/herdr-gamepad`, or clone it and
-`herdr plugin link <path>`. Everything after the next section is upstream's documentation
-and still applies.
+`herdr plugin link <path>`. Everything after the next two sections is upstream's
+documentation and still applies.
+
+## Rumble (this fork)
+
+The pad tells you when an agent needs a human. With `[haptics]` in `gamepad.toml` the
+daemon polls Herdr's `agent.list` every `poll_ms` and buzzes when a pane's agent status
+changes:
+
+| Transition | Pattern | Meaning |
+| --- | --- | --- |
+| any → `blocked` | `blocked` (default `double`) | a permission prompt or a question is waiting |
+| any → `done` | `done` (default `single`) | the agent finished and the pane has not been looked at |
+| `working` → `idle` | `done` | the agent finished while its pane was on screen — Herdr reports `idle`, not `done`, in that case |
+
+```toml
+[haptics]
+enabled        = true
+poll_ms        = 500
+blocked        = "double"      # a preset, or on/off lengths in ms: [400, 150, 400]
+done           = "single"
+intensity      = 1.0           # 0–1, motor strength
+sharpness      = 0.5           # 0–1, CoreHaptics sharpness
+locality       = "handles"     # handles | left_handle | right_handle | triggers | all
+ignore_focused = false         # true: no buzz for the pane you are already looking at
+```
+
+Presets: `single` = one 350 ms pulse, `double` = 300/150/300 ms, `triple` =
+200/120/200/120/200, `long` = 800 ms, `off`. Two buzzes are at least one second apart, and
+when several agents change in the same poll the `blocked` one wins. Every buzz is one line
+in the daemon log (`~/.local/state/herdr/plugins/gamepad/daemon.log`).
+
+The motors are driven through Apple's GameController / CoreHaptics — an output-only handle
+next to the IOKit reader, so it needs no permission and does not fight the input side.
+Any pad the framework exposes haptics for should work (Xbox One / Series and PlayStation
+pads on macOS 11+); tested on an Xbox Series X|S over Bluetooth. The pad has to be awake.
+
+Try it, and compare settings without restarting the daemon:
+
+```bash
+bin/herdr-gamepad rumble                          # the blocked pattern, config settings
+bin/herdr-gamepad rumble double all 1 0           # pattern, locality, intensity, sharpness
+bin/herdr-gamepad rumble 500,200,500 left_handle  # on/off ms, one motor
+herdr plugin action invoke gamepad.rumble         # the same double pulse, from Herdr
+```
+
+Why polling and not `events.subscribe`: `pane.agent_status_changed` is per pane, so a
+subscriber has to list panes, subscribe to each, and re-subscribe as they come and go over
+a persistent connection. One `agent.list` every half second on a local socket costs
+nothing, survives a Herdr restart, and sees new panes on its own.
 
 ## Example: an Xbox Series X|S as a desk-side supervisor for Claude Code agents
 
