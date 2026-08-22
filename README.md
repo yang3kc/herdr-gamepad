@@ -79,10 +79,12 @@ Three rules shaped it:
   Escape / Tab, Shift+Tab, the arrows and the dictation toggle are synthetic keys.
 - **Real buttons for the most-pressed actions**, stick clicks for the rare ones.
 
+It assumes macOS, Herdr 0.8.2, this fork, an Xbox Series X|S over Bluetooth, Claude Code
+in the panes, and (optionally) a dictation app with a global hotkey.
 Copy [`examples/xbox-series-claude-code/`](examples/xbox-series-claude-code/). Its README
-walks through the measured HID profile for this pad, every binding, the install steps,
-and the three macOS things that are not obvious (launchd for Accessibility, the Game
-Overlay, Karabiner seizing the pad).
+lists the requirements in full and walks through the measured HID profile for this pad,
+every binding, the install steps, and the three macOS things that are not obvious
+(launchd for Accessibility, the Game Overlay, Karabiner seizing the pad).
 
 ## The default layout
 

@@ -14,6 +14,36 @@ These files are mirrored by hand from the author's dotfiles and may lag a layout
 behind. Everything in them is annotated; the three lines you will want to change are
 marked `ADJUST`.
 
+## Requirements
+
+What this setup assumes. Each one is a real dependency; the layout does not work
+without the first six.
+
+- **macOS**, Apple Silicon tested. The plugin reads the pad through IOKit HID and types
+  through CGEvent; none of it runs on Linux or Windows.
+- **Herdr**, verified on 0.8.2. The layout calls `agent.prompt`, `pane.send_text`,
+  `pane.zoom`, `pane.focus_direction`, `pane.current` and `plugin.action.invoke` over
+  the socket. The plugin manifest allows 0.7.0, but those calls were only checked on
+  0.8.2 — run `herdr --version`.
+- **Swift**, from the Xcode Command Line Tools (`xcode-select --install`), to build the
+  plugin. No Xcode, no package manager, one binary.
+- **This fork of herdr-gamepad** (`yang3kc/herdr-gamepad`). Upstream cannot see the
+  D-pad, the triggers or Share on this pad, so a third of the layout does nothing there.
+- **An Xbox Series X|S controller paired over Bluetooth** (USB VID:PID `045E:0B13`).
+  The `[profile]` in `gamepad.toml` is measured for exactly that. An Xbox One pad, a
+  wired pad, or a clone reports different usages and pages — run `gamepad.learn` /
+  `gamepad.setup` and write your own profile; the bindings still apply.
+- **Claude Code** running in the Herdr panes. Every slash command on the pad (`/`,
+  `/effort`, `/model`, `/compact`, `/clear`, `/exit`) is Claude Code's. With Codex or
+  another agent, retarget those bindings.
+- **A dictation app with a global toggle hotkey**, for RT. superwhisper here; any app
+  that toggles recording on a hotkey works. Optional — rebind RT if you have none.
+- **Optional:** the `padkit` companion plugin in this folder, for the Xbox button; Warp
+  as the terminal, or set `PADKIT_TERMINAL_APP` to yours.
+- **macOS settings**, all covered in Install: Accessibility granted to the daemon binary
+  (key bindings only), the Game Overlay switched off, and the pad left disabled in
+  Karabiner-Elements if you run it.
+
 ## What is in this folder
 
 | File | What it is |
