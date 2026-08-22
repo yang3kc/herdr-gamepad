@@ -58,13 +58,20 @@ prefix_notify     = false
 # poll_ms and buzzes on a pane's transition into `blocked` (a prompt is
 # waiting), into `done` (finished, not yet looked at), or from `working`
 # straight to `idle` (herdr says idle, not done, when the pane was on screen
-# as the agent finished). Patterns: off, single, double, triple, long.
-# Needs no extra permission; the pad must be awake.
+# as the agent finished). Needs no extra permission; the pad must be awake.
+#
+# A pattern is a preset (off, single = 350 ms, double = 300/150/300,
+# triple = 200/120/200/120/200, long = 800) or on/off lengths in ms,
+# e.g. [400, 150, 400]. Try settings without a restart:
+#   bin/herdr-gamepad rumble <pattern> <locality> <intensity> <sharpness>
 enabled        = true
 poll_ms        = 500
 blocked        = "double"
 done           = "single"
-ignore_focused = false    # true: no buzz for the pane you are already looking at
+intensity      = 1.0         # 0–1, motor strength
+sharpness      = 0.5         # 0–1, CoreHaptics sharpness; try 0 and 1 and keep what feels stronger
+locality       = "handles"   # handles | left_handle | right_handle | triggers | all
+ignore_focused = false       # true: no buzz for the pane you are already looking at
 
 [herdr]
 

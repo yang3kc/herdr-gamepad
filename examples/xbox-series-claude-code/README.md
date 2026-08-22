@@ -116,14 +116,22 @@ A quits) and workspace and tab switching (tried on the triggers, not needed).
 
 ## Rumble
 
-`[haptics]` in `gamepad.toml` is the attention signal: two strong pulses on the grips when
-any agent becomes `blocked` (a permission prompt or question is waiting), one short pulse
+`[haptics]` in `gamepad.toml` is the attention signal: two 300 ms pulses on the grips when
+any agent becomes `blocked` (a permission prompt or question is waiting), one 350 ms pulse
 when one finishes — `done`, or `working → idle`, which is what Herdr reports when the pane
 was on screen at the time (no `done` ever shows up for it). The daemon polls `agent.list` every
 500 ms and plays the pattern through GameController / CoreHaptics next to its IOKit
 reader — no extra permission, the pad only has to be awake. Two buzzes are at least one
 second apart. `ignore_focused = true` skips the pane you are already looking at. Every
 buzz is one line in the daemon log; `bin/herdr-gamepad rumble double` plays one on demand.
+
+Strength is three keys: `intensity` (0–1), `sharpness` (0–1) and `locality` (`handles`,
+`left_handle`, `right_handle`, `triggers`, `all`). The presets are `single` = one 350 ms
+pulse, `double` = 300/150/300 ms, `triple` = 200/120/200/120/200, `long` = 800 ms, all at
+full intensity; a pattern can also be on/off lengths in ms, `done = [500]`. Compare before
+you commit to anything: `bin/herdr-gamepad rumble double all 1 0` plays that combination
+once, with the config's values for whatever is left out. The first `single` here was 180 ms
+at intensity 0.8 and was too mild to notice; 350 ms at 1.0 is.
 
 ## The profile
 

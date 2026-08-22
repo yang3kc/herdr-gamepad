@@ -37,11 +37,15 @@ Bluetooth Xbox Series X|S pad needs to be fully usable:
 - **Rumble.** `[haptics] enabled = true` makes the pad buzz when an agent becomes
   `blocked` (a prompt is waiting) or finishes (`done`, or `idle` straight from `working`,
   which is what Herdr reports when the pane was on screen at the time). The daemon
-  polls `agent.list` every `poll_ms` (default 500) and plays a named pattern on the grip
-  motors through Apple's GameController / CoreHaptics, next to its IOKit reader:
-  `blocked = "double"`, `done = "single"` (also `off`, `triple`, `long`);
-  `ignore_focused = true` skips the pane you are looking at. No extra permission.
-  `bin/herdr-gamepad rumble double` plays one pattern, to check that the motors answer.
+  polls `agent.list` every `poll_ms` (default 500) and plays a pattern through Apple's
+  GameController / CoreHaptics, next to its IOKit reader. A pattern is a preset
+  (`single` = 350 ms, `double` = 300/150/300, `triple`, `long` = 800 ms, `off`) or on/off
+  lengths in ms (`blocked = [400, 150, 400]`); `intensity` and `sharpness` (0–1) and
+  `locality` (`handles` | `left_handle` | `right_handle` | `triggers` | `all`) set the
+  strength and the motors; `ignore_focused = true` skips the pane you are looking at.
+  No extra permission. `bin/herdr-gamepad rumble [pattern] [locality] [intensity]
+  [sharpness]` plays one pattern, with the config's values for anything left out, so
+  you can compare settings before writing them down.
 - Learn mode names the HID page of anything that is not on the Button or Generic
   Desktop page, and setup skips the four D-pad prompts when the pad has a hat switch.
 - A complete, copy-able setup for a Bluetooth Xbox Series X|S driving Claude Code
