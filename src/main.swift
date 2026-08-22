@@ -7,7 +7,7 @@ herdr-gamepad — drive Herdr with a game controller
   learn     press anything, see what it is (no config changes)
   daemon    run the mapped bindings
   status    show controller, config and daemon state
-  rumble    play a haptic pattern on the pad: rumble [off|single|double|triple|long]
+  rumble    play a pattern on the pad: rumble [pattern] [locality] [intensity] [sharpness]
 
 Feedback appears as Herdr notifications, because plugin actions run
 without a terminal attached.
@@ -329,8 +329,8 @@ func runDaemon() {
     var haptics: Haptics?
     var watcher: AgentWatcher?
     if config.haptics.enabled {
-        let h = Haptics()
-        h.onLog = infoLog
+        let h = Haptics(intensity: config.haptics.intensity, sharpness: config.haptics.sharpness,
+                        locality: config.haptics.locality, onLog: infoLog)
         let w = AgentWatcher(herdr: HerdrClient(socketPath: herdr.socketPath),
                              haptics: h, settings: config.haptics)
         w.onLog = infoLog
@@ -420,7 +420,8 @@ func runStatus() {
                          + "(a hat-switch D-pad is decoded without a profile entry)")
             let h = config.haptics
             lines.append("haptics:     " + (h.enabled
-                ? "on — blocked=\(h.blocked.rawValue), done=\(h.done.rawValue), poll \(h.pollMs) ms"
+                ? "on — blocked=\(h.blocked.name), done=\(h.done.name), \(h.locality), "
+                  + "intensity \(h.intensity), sharpness \(h.sharpness), poll \(h.pollMs) ms"
                   + (h.ignoreFocused ? ", focused pane ignored" : "")
                 : "off ([haptics] enabled = true turns it on)"))
         } catch {
@@ -442,16 +443,44 @@ func runStatus() {
 
 // MARK: - rumble
 
-/// `herdr-gamepad rumble [pattern]` — play one pattern and exit. The quickest
-/// way to check that the pad's motors answer from this machine at all.
+/// `herdr-gamepad rumble [pattern] [locality] [intensity] [sharpness]` — play
+/// one pattern and exit. Anything not given comes from `[haptics]` in the
+/// config, so this is both the motor check and the way to compare settings
+/// before writing them down.
 func runRumble() {
-    let name = CommandLine.arguments.count > 2 ? CommandLine.arguments[2] : "double"
-    guard let pattern = HapticPattern(rawValue: name) else {
-        FileHandle.standardError.write("unknown pattern `\(name)`; use one of: \(HapticPattern.names)\n".data(using: .utf8)!)
+    let args = Array(CommandLine.arguments.dropFirst(2))
+    let help = "usage: herdr-gamepad rumble [pattern] [locality] [intensity] [sharpness]\n"
+        + "  pattern    \(HapticPattern.names), or on/off lengths in ms like 300,150,300\n"
+        + "  locality   \(Haptics.localityNames)\n"
+        + "  intensity  0…1 (motor strength)\n"
+        + "  sharpness  0…1\n"
+        + "Anything left out comes from [haptics] in \(Config.configPath);\n"
+        + "the pattern defaults to the `blocked` one."
+    if args.contains("-h") || args.contains("--help") { print(help); return }
+    func fail(_ message: String) -> Never {
+        FileHandle.standardError.write("\(message)\n\n\(help)\n".data(using: .utf8)!)
         exit(2)
     }
-    let haptics = Haptics()
-    haptics.onLog = { print($0) }
+    var settings = (try? Config.load())?.haptics ?? AgentWatcher.Settings()
+    var pattern = settings.blocked
+    if args.count > 0 {
+        guard let p = HapticPattern.parse(args[0]) else { fail("unknown pattern `\(args[0])`") }
+        pattern = p
+    }
+    if args.count > 1 {
+        guard Haptics.isLocalityName(args[1]) else { fail("unknown locality `\(args[1])`") }
+        settings.locality = args[1]
+    }
+    if args.count > 2 {
+        guard let v = Float(args[2]), (0...1).contains(v) else { fail("intensity must be 0…1") }
+        settings.intensity = v
+    }
+    if args.count > 3 {
+        guard let v = Float(args[3]), (0...1).contains(v) else { fail("sharpness must be 0…1") }
+        settings.sharpness = v
+    }
+    let haptics = Haptics(intensity: settings.intensity, sharpness: settings.sharpness,
+                          locality: settings.locality, onLog: { print($0) })
     // Pairing is already done; the framework just needs a few run-loop turns
     // to hand us the controller.
     let deadline = Date().addingTimeInterval(3)
@@ -463,7 +492,7 @@ func runRumble() {
         exit(1)
     }
     haptics.play(pattern)
-    print("playing \(pattern.rawValue)")
+    print("playing \(pattern.name) on \(haptics.summary)")
     RunLoop.main.run(until: Date().addingTimeInterval(pattern.totalDuration + 0.5))
 }
 

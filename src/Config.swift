@@ -154,12 +154,27 @@ struct Config {
             config.haptics.ignoreFocused = table.bool("ignore_focused") ?? config.haptics.ignoreFocused
             for (key, keyPath) in [("blocked", \AgentWatcher.Settings.blocked),
                                    ("done", \AgentWatcher.Settings.done)] {
-                guard let name = table.string(key) else { continue }
-                guard let pattern = HapticPattern(rawValue: name) else {
-                    throw ConfigError("haptics.\(key) = \"\(name)\" is not a pattern; "
-                                      + "use one of: \(HapticPattern.names)")
+                guard let raw = table[key] else { continue }
+                guard let pattern = HapticPattern.parse(raw) else {
+                    throw ConfigError("haptics.\(key) must be a preset (\(HapticPattern.names)) "
+                                      + "or on/off lengths in ms, like [300, 150, 300]")
                 }
                 config.haptics[keyPath: keyPath] = pattern
+            }
+            for (key, keyPath) in [("intensity", \AgentWatcher.Settings.intensity),
+                                   ("sharpness", \AgentWatcher.Settings.sharpness)] {
+                guard let v = table.double(key) else { continue }
+                guard (0...1).contains(v) else {
+                    throw ConfigError("haptics.\(key) must be between 0 and 1")
+                }
+                config.haptics[keyPath: keyPath] = Float(v)
+            }
+            if let name = table.string("locality") {
+                guard Haptics.isLocalityName(name) else {
+                    throw ConfigError("haptics.locality = \"\(name)\" is not known; "
+                                      + "use one of: \(Haptics.localityNames)")
+                }
+                config.haptics.locality = name
             }
             guard config.haptics.pollMs >= 100 else {
                 throw ConfigError("haptics.poll_ms must be 100 or more")

@@ -2,27 +2,70 @@ import Foundation
 import GameController
 import CoreHaptics
 
-/// A named rumble, so the config can pick one per event by name.
-enum HapticPattern: String, CaseIterable {
-    case off, single, double, triple, long
+/// A rumble: on/off lengths in milliseconds, on first (`[300, 150, 300]` is
+/// two 0.3 s pulses with a 0.15 s gap). Named presets cover the usual cases.
+struct HapticPattern: Equatable {
+    /// Alternating on, off, on, off… in ms. A trailing off is ignored.
+    var steps: [Int]
+    /// Preset name or the literal steps, for logs.
+    var name: String
 
-    /// Pulses as (start offset, length, intensity 0…1), in seconds.
-    var pulses: [(start: TimeInterval, duration: TimeInterval, intensity: Float)] {
-        switch self {
-        case .off:    return []
-        case .single: return [(0.0, 0.18, 0.8)]
-        case .double: return [(0.0, 0.25, 1.0), (0.40, 0.25, 1.0)]
-        case .triple: return [(0.0, 0.15, 1.0), (0.30, 0.15, 1.0), (0.60, 0.15, 1.0)]
-        case .long:   return [(0.0, 0.60, 1.0)]
+    static let presets: [(name: String, steps: [Int])] = [
+        ("off",    []),
+        ("single", [350]),
+        ("double", [300, 150, 300]),
+        ("triple", [200, 120, 200, 120, 200]),
+        ("long",   [800]),
+    ]
+
+    static var names: String { presets.map(\.name).joined(separator: ", ") }
+
+    static func named(_ name: String) -> HapticPattern? {
+        guard let p = presets.first(where: { $0.name == name }) else { return nil }
+        return HapticPattern(steps: p.steps, name: p.name)
+    }
+
+    /// Accepts a preset name, `"300,150,300"` (the CLI form) or a TOML array
+    /// of ms (`[300, 150, 300]`). Nil when it is none of those.
+    static func parse(_ value: Any) -> HapticPattern? {
+        if let s = value as? String {
+            if let p = named(s) { return p }
+            let parts = s.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+            let ms = parts.compactMap { Int($0) }
+            guard !parts.isEmpty, ms.count == parts.count else { return nil }
+            return fromSteps(ms)
         }
+        if let arr = value as? [Any] {
+            let ms = arr.compactMap { ($0 as? Int) ?? (($0 as? Double).map { Int($0) }) }
+            guard ms.count == arr.count else { return nil }
+            return fromSteps(ms)
+        }
+        return nil
+    }
+
+    private static func fromSteps(_ ms: [Int]) -> HapticPattern? {
+        guard ms.allSatisfy({ $0 >= 0 }), ms.reduce(0, +) <= 10_000 else { return nil }
+        return HapticPattern(steps: ms, name: "[" + ms.map(String.init).joined(separator: ", ") + "]")
+    }
+
+    var isOff: Bool { pulses.isEmpty }
+
+    /// Pulses as (start offset, length) in seconds.
+    var pulses: [(start: TimeInterval, duration: TimeInterval)] {
+        var out: [(TimeInterval, TimeInterval)] = []
+        var t: TimeInterval = 0
+        for (i, ms) in steps.enumerated() {
+            let secs = TimeInterval(ms) / 1000
+            if i % 2 == 0, ms > 0 { out.append((t, secs)) }
+            t += secs
+        }
+        return out
     }
 
     /// How long the whole pattern takes to play out.
     var totalDuration: TimeInterval {
         pulses.map { $0.start + $0.duration }.max() ?? 0
     }
-
-    static var names: String { allCases.map(\.rawValue).joined(separator: ", ") }
 }
 
 /// Drives the pad's motors through Apple's GameController framework.
@@ -41,8 +84,31 @@ final class Haptics {
         var errorDescription: String? { "no controller with haptics is connected" }
     }
 
-    /// Which motors a pattern plays on. `handles` is both grip motors.
-    var locality: GCHapticsLocality = .handles
+    /// Which motors play, by config name. On an Xbox pad `left_handle` is the
+    /// heavy low-frequency motor, `right_handle` the light one, `triggers`
+    /// the two impulse triggers; `all` is everything at once.
+    static let localities: [(name: String, locality: GCHapticsLocality)] = [
+        ("handles",      .handles),
+        ("left_handle",  .leftHandle),
+        ("right_handle", .rightHandle),
+        ("triggers",     .triggers),
+        ("all",          .all),
+    ]
+    static var localityNames: String { localities.map(\.name).joined(separator: ", ") }
+    static func locality(named name: String) -> GCHapticsLocality? {
+        localities.first(where: { $0.name == name })?.locality
+    }
+    static func isLocalityName(_ name: String) -> Bool { locality(named: name) != nil }
+
+    /// Motor strength of every pulse, 0…1.
+    var intensity: Float = 1.0
+    /// CoreHaptics sharpness, 0…1. What it does on a given pad is the pad's
+    /// business; expose it so people can try.
+    var sharpness: Float = 0.5
+    /// Which motors, by name from `localities`.
+    var localityName = "handles" {
+        didSet { if localityName != oldValue { dropEngine() } }
+    }
     var onLog: ((String) -> Void)?
 
     private var controller: GCController?
@@ -50,7 +116,12 @@ final class Haptics {
     private var engineRunning = false
     private var observers: [NSObjectProtocol] = []
 
-    init() {
+    init(intensity: Float = 1.0, sharpness: Float = 0.5, locality: String = "handles",
+         onLog: ((String) -> Void)? = nil) {
+        self.intensity = intensity
+        self.sharpness = sharpness
+        self.localityName = locality
+        self.onLog = onLog
         let nc = NotificationCenter.default
         observers.append(nc.addObserver(forName: .GCControllerDidConnect, object: nil, queue: .main) { [weak self] n in
             guard let self, let c = n.object as? GCController else { return }
@@ -79,6 +150,11 @@ final class Haptics {
     /// True once a controller with motors is in hand.
     var isReady: Bool { controller?.haptics != nil }
 
+    /// One line for logs and `status`.
+    var summary: String {
+        "\(localityName), intensity \(intensity), sharpness \(sharpness)"
+    }
+
     private func adopt(_ c: GCController) {
         guard controller == nil else { return }  // one pad is plenty
         guard c.haptics != nil else {
@@ -87,7 +163,7 @@ final class Haptics {
         }
         controller = c
         dropEngine()
-        onLog?("haptics: using \(c.vendorName ?? "?") (\(c.productCategory))")
+        onLog?("haptics: using \(c.vendorName ?? "?") (\(c.productCategory)) — \(summary)")
     }
 
     private func dropEngine() {
@@ -100,6 +176,7 @@ final class Haptics {
             if !engineRunning { try e.start(); engineRunning = true }
             return e
         }
+        let locality = Haptics.locality(named: localityName) ?? .handles
         guard let h = controller?.haptics, let e = h.createEngine(withLocality: locality) else {
             throw HapticsError.noController
         }
@@ -123,14 +200,14 @@ final class Haptics {
     /// Plays a pattern once. Failures are logged, never thrown: rumble is a
     /// courtesy, and nothing upstream should stall because the pad is asleep.
     func play(_ pattern: HapticPattern) {
-        guard pattern != .off else { return }
+        guard !pattern.isOff else { return }
         do {
             let e = try readyEngine()
             let events = pattern.pulses.map { p in
                 CHHapticEvent(eventType: .hapticContinuous,
                               parameters: [
-                                  CHHapticEventParameter(parameterID: .hapticIntensity, value: p.intensity),
-                                  CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5),
+                                  CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
+                                  CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness),
                               ],
                               relativeTime: p.start,
                               duration: p.duration)
@@ -138,7 +215,7 @@ final class Haptics {
             let player = try e.makePlayer(with: CHHapticPattern(events: events, parameters: []))
             try player.start(atTime: CHHapticTimeImmediate)
         } catch {
-            onLog?("haptics: play \(pattern.rawValue) failed: \(error.localizedDescription)")
+            onLog?("haptics: play \(pattern.name) failed: \(error.localizedDescription)")
             dropEngine()
         }
     }
@@ -159,10 +236,13 @@ final class AgentWatcher {
     struct Settings {
         var enabled = false
         var pollMs = 500
-        var blocked: HapticPattern = .double
-        var done: HapticPattern = .single
+        var blocked = HapticPattern.named("double")!
+        var done = HapticPattern.named("single")!
         /// Skip the pane that has focus — you are already looking at it.
         var ignoreFocused = false
+        var intensity: Float = 1.0
+        var sharpness: Float = 0.5
+        var locality = "handles"
     }
 
     var onLog: ((String) -> Void)?
@@ -194,7 +274,7 @@ final class AgentWatcher {
         t.resume()
         timer = t
         onLog?("haptics: watching agents every \(settings.pollMs) ms "
-               + "(blocked=\(settings.blocked.rawValue), done=\(settings.done.rawValue))")
+               + "(blocked=\(settings.blocked.name), done=\(settings.done.name))")
     }
 
     private func tick() {
@@ -233,11 +313,11 @@ final class AgentWatcher {
         guard let pattern = chosen, let reason = why else { return }
         let since = Date().timeIntervalSince(lastPlay)
         guard since >= minGap else {
-            onLog?("haptics: skipped \(pattern.rawValue) for \(reason) (\(Int(since * 1000)) ms after the last one)")
+            onLog?("haptics: skipped \(pattern.name) for \(reason) (\(Int(since * 1000)) ms after the last one)")
             return
         }
         lastPlay = Date()
-        onLog?("haptics: \(pattern.rawValue) for \(reason)")
+        onLog?("haptics: \(pattern.name) for \(reason)")
         DispatchQueue.main.async { [haptics] in haptics.play(pattern) }
     }
 }
