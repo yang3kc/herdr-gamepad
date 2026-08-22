@@ -17,6 +17,29 @@
 
 ---
 
+## This fork
+
+[yang3kc/herdr-gamepad](https://github.com/yang3kc/herdr-gamepad) tracks
+[htlin222/herdr-gamepad](https://github.com/htlin222/herdr-gamepad) and adds what a
+Bluetooth Xbox Series X|S pad needs to be fully usable:
+
+- **D-pad.** A HID hat switch is decoded into `dpad_up` / `dpad_down` / `dpad_left` /
+  `dpad_right` by the reader itself. No profile entry; diagonals press two.
+- **Triggers on the Simulation page.** `[profile.axes]` accepts `Brake = "lt"` and
+  `Accelerator = "rt"`, which is where Bluetooth Xbox Series pads report LT and RT.
+- **Share button** (Consumer page, usage 0xB2). A new standard name `share`; map it with
+  `[profile.buttons] 178 = "share"`.
+- **`"$focused"` works.** `pane.current` nests the id under `pane`; the substitution now
+  reads it from there, so every `[[bind]]` that needs a `pane_id` actually gets one.
+- **New built-ins.** `agent_quit` — Escape, then `/exit` and Enter, sent to the focused
+  agent's pane over the socket (override the command with `params = { command = "…" }`
+  in a `[[bind]]`); `tab_next` / `tab_previous`; `workspace_next` / `workspace_previous`.
+- Learn mode names the HID page of anything that is not on the Button or Generic
+  Desktop page, and setup skips the four D-pad prompts when the pad has a hat switch.
+
+Install from this fork with `herdr plugin install yang3kc/herdr-gamepad`, or clone it and
+`herdr plugin link <path>`. Everything below is upstream's documentation and still applies.
+
 ## The default layout
 
 <p align="center">
@@ -142,8 +165,9 @@ lb  rb                shoulders
 lt  rt                analog triggers
 back  start           little centre buttons
 l3  r3                stick clicks — many pads never send these
-dpad_up  dpad_down  dpad_left  dpad_right
+dpad_up  dpad_down  dpad_left  dpad_right     (a hat switch is decoded into these)
 guide                 big middle button, usually eaten by macOS
+share                 Xbox Series Share / DualSense Create — Consumer page
 left_up   left_down   left_left   left_right      sticks, per direction
 right_up  right_down  right_left  right_right
 ```

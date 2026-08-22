@@ -103,10 +103,16 @@ struct Config {
         }
 
         // [profile.axes]  <HID axis> = "<standard axis, or lt/rt>"
+        //
+        // The key is a Generic Desktop axis (X/Y/Z/Rx/Ry/Rz), a Simulation-page
+        // trigger (Brake/Accelerator — Bluetooth Xbox Series pads), or a raw
+        // usage number. The D-pad is not listed here: a hat switch is decoded
+        // by the reader on its own.
         if let table = root.table("profile")?.table("axes") {
             for (axisKey, value) in table {
                 guard let usage = HIDAxis.fromName(axisKey) ?? UInt32(axisKey) else {
-                    throw ConfigError("profile.axes key `\(axisKey)` must be X/Y/Z/Rx/Ry/Rz or a usage number")
+                    throw ConfigError("profile.axes key `\(axisKey)` must be X/Y/Z/Rx/Ry/Rz, "
+                                      + "Brake/Accelerator, or a usage number")
                 }
                 guard let name = (value as? String)?.lowercased() else {
                     throw ConfigError("profile.axes.\(axisKey) must be a string")
@@ -338,13 +344,15 @@ struct Config {
         func resolveButton(_ value: Any, field: String) throws -> Int {
             if let index = value as? Int {
                 guard index >= 0, index < Standard.buttonNames.count else {
-                    throw ConfigError("\(where_): \(field) = \(index) is out of range 0…16")
+                    throw ConfigError("\(where_): \(field) = \(index) is out of range "
+                                      + "0…\(Standard.buttonNames.count - 1)")
                 }
                 return index
             }
             if let name = value as? String, let index = Standard.buttonIndex(name) { return index }
             throw ConfigError("\(where_): \(field) = \(value) is not a button. "
-                              + "Use a name (\(Standard.buttonNames.prefix(4).joined(separator: ", "))…) or 0…16")
+                              + "Use a name (\(Standard.buttonNames.prefix(4).joined(separator: ", "))…) "
+                              + "or 0…\(Standard.buttonNames.count - 1)")
         }
 
         let input: Binding.Input

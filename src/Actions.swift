@@ -30,9 +30,16 @@ final class ActionRunner {
     /// new behaviour earns a built-in here.
     ///
     /// Named in Herdr's snake_case style so one config reads consistently.
+    ///
+    /// The tab/workspace cycles are the one exception to the rule above. They
+    /// exist for setups where the keybinding route is unavailable — the plugin
+    /// could not parse the real config.toml, or the user never bound those
+    /// keys — and they go over the socket, so they work whatever is frontmost.
     static let herdrBuiltins = [
         "agent_next_waiting", "agent_previous_waiting",
-        "agent_back", "agent_overview", "agent_read",
+        "agent_back", "agent_overview", "agent_read", "agent_quit",
+        "tab_next", "tab_previous",
+        "workspace_next", "workspace_previous",
     ]
 
     /// Synthesised input-device behaviour. Not Herdr operations at all —
@@ -87,6 +94,11 @@ final class ActionRunner {
         case "agent_back":              try goBack()
         case "agent_overview":          try overview()
         case "agent_read":              try readCurrent()
+        case "agent_quit":              try quitAgent(params: params)
+        case "tab_next":                try cycleTab(offset: +1)
+        case "tab_previous":            try cycleTab(offset: -1)
+        case "workspace_next":          try cycleWorkspace(offset: +1)
+        case "workspace_previous":      try cycleWorkspace(offset: -1)
         // Negative wheel1 moves the view toward older output — the opposite of
         // what the sign name suggests. Verified against a real controller.
         case "scroll_up":               scroll(lines: -(params.int("lines") ?? 3))
@@ -192,8 +204,7 @@ final class ActionRunner {
         }
         guard params.values.contains(where: needsSubstitution) else { return params }
 
-        let current = try herdr.request("pane.current")
-        guard let paneID = current["pane_id"] as? String else { return params }
+        let paneID = try focusedPaneID()
 
         func substitute(_ value: Any) -> Any {
             if let s = value as? String { return s == "$focused" ? paneID : s }
@@ -201,6 +212,53 @@ final class ActionRunner {
             return value
         }
         return params.mapValues(substitute)
+    }
+
+    /// The pane that currently has focus.
+    ///
+    /// `pane.current` answers `{"type": "pane_current", "pane": {"pane_id": …}}`
+    /// — the id sits inside a nested `pane` object, not at the top level. The
+    /// flat fallback is kept in case an older server answers that way.
+    private func focusedPaneID() throws -> String {
+        let current = try herdr.request("pane.current")
+        let pane = current["pane"] as? [String: Any] ?? current
+        guard let id = pane["pane_id"] as? String else {
+            throw HerdrClient.ClientError.api(code: "no_focused_pane",
+                                              message: "pane.current returned no pane_id")
+        }
+        return id
+    }
+
+    // MARK: - Quitting an agent
+
+    /// Ends the session of the agent in the focused pane, over the socket.
+    ///
+    /// Three steps, each its own request so the pane sees them as separate
+    /// keystrokes: Escape, then the agent's quit command, then Enter. Escape
+    /// goes first so that Enter can never land on an open permission dialog
+    /// and approve it — it closes the dialog, or interrupts a running turn,
+    /// and does nothing at an empty prompt. The short pause after it keeps a
+    /// TUI from reading `ESC /` as Alt+/.
+    ///
+    /// Refuses when the focused pane holds no agent, so a shell never gets the
+    /// command typed at it. `params.command` overrides the default `/exit`
+    /// for agents that spell it differently.
+    private func quitAgent(params: [String: Any]) throws {
+        let current = try herdr.request("pane.current")
+        let pane = current["pane"] as? [String: Any] ?? current
+        guard let paneID = pane["pane_id"] as? String else {
+            throw HerdrClient.ClientError.api(code: "no_focused_pane",
+                                              message: "pane.current returned no pane_id")
+        }
+        guard let agent = pane["agent"] as? String, !agent.isEmpty else {
+            herdr.notify("No agent to quit", body: "The focused pane is not running an agent.")
+            return
+        }
+        let command = params.string("command") ?? "/exit"
+        try herdr.request("pane.send_keys", ["pane_id": paneID, "keys": ["esc"]])
+        usleep(150_000)
+        try herdr.request("pane.send_text", ["pane_id": paneID, "text": command])
+        try herdr.request("pane.send_keys", ["pane_id": paneID, "keys": ["Enter"]])
     }
 
     // MARK: - Workspace / tab cycling

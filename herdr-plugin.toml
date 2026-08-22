@@ -1,6 +1,6 @@
 id = "gamepad"
 name = "Gamepad"
-version = "0.1.0"
+version = "0.2.0"
 min_herdr_version = "0.7.0"
 description = "Drive Herdr with a game controller. Patrol your AI agents, split panes, and switch workspaces from the couch — any gamepad, mapped by you in 60 seconds."
 platforms = ["macos"]

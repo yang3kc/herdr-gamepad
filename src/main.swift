@@ -307,7 +307,7 @@ func runDaemon() {
                 }
             }
 
-        case .rawButton, .rawAxis:
+        case .rawButton, .rawAxis, .rawHat:
             break  // daemon works in standard mapping only
         }
     }) else {
@@ -329,11 +329,13 @@ func runLearn() {
 
     guard reader.start({ event in
         switch event {
-        case let .rawButton(usage, pressed) where pressed:
-            let known = Profile.xbox360.buttons[usage].map { " · usually \(Standard.buttonName($0))" } ?? ""
+        case let .rawButton(usage, page, pressed) where pressed:
+            let known = page == HIDPage.button
+                ? Profile.xbox360.buttons[usage].map { " · usually \(Standard.buttonName($0))" } ?? ""
+                : " · \(HIDPage.name(page)) page"
             herdr.notify("button \(usage)", body: "pressed\(known)")
 
-        case let .rawAxis(usage, value, min, max):
+        case let .rawAxis(usage, page, value, min, max):
             // Sticks emit hundreds of values per second; one line per half
             // second is enough to read while still feeling responsive.
             let now = Date()
@@ -342,8 +344,14 @@ func runLearn() {
             let normalized = (Double(value - min) / span) * 2 - 1
             guard abs(normalized) > 0.4 else { return }
             lastAxisNotify[usage] = now
-            herdr.notify("axis \(HIDAxis.name(usage))",
+            let where_ = page == HIDPage.genericDesktop ? "" : " (\(HIDPage.name(page)) page)"
+            herdr.notify("axis \(HIDAxis.name(usage))\(where_)",
                          body: String(format: "%.2f  (raw %d, range %d…%d)", normalized, value, min, max))
+
+        case let .rawHat(value, min, max):
+            let hat = Hat.decode(raw: value, min: min, max: max)
+            guard hat != Hat() else { return }
+            herdr.notify("hat switch \(value)", body: "\(hat.label) · decoded as dpad_* automatically")
 
         default:
             break
@@ -381,7 +389,8 @@ func runStatus() {
             lines.append("config:      \(configPath)")
             lines.append("bindings:    \(config.bindings.count)")
             lines.append("profile:     \(config.profile.buttons.count) buttons, "
-                         + "\(config.profile.axes.count) axes, \(config.profile.triggers.count) triggers")
+                         + "\(config.profile.axes.count) axes, \(config.profile.triggers.count) triggers "
+                         + "(a hat-switch D-pad is decoded without a profile entry)")
         } catch {
             lines.append("config:      INVALID — \(error.localizedDescription)")
         }
@@ -447,14 +456,26 @@ func runSetup() {
 
     guard reader.start({ event in
         switch event {
-        case let .rawButton(usage, pressed) where pressed:
+        case let .rawButton(usage, _, pressed) where pressed:
             guard step < steps.count, !claimed.contains(usage) else { return }
             claimed.insert(usage)
             mapping[usage] = step
             herdr.notify("✓ \(steps[step].uppercased()) = usage \(usage)")
             advance()
 
-        case let .rawAxis(usage, value, min, max):
+        case let .rawHat(value, min, max):
+            // The whole D-pad arrived as one hat switch. It needs no entry in
+            // the profile, so skip its four prompts instead of timing out on
+            // each.
+            guard step < steps.count, Hat.decode(raw: value, min: min, max: max) != Hat() else { return }
+            let dpadSteps = 12...15
+            guard dpadSteps.contains(step) else { return }
+            timeoutWork?.cancel()
+            herdr.notify("✓ D-pad is a hat switch", body: "Decoded automatically — skipping its four steps.")
+            step = dpadSteps.upperBound + 1
+            if step >= steps.count { advance() } else { prompt() }
+
+        case let .rawAxis(usage, _, value, min, max):
             guard step >= steps.count else { return }   // analog phase only
             let span = max > min ? Double(max - min) : 1
             let normalized = (Double(value - min) / span) * 2 - 1

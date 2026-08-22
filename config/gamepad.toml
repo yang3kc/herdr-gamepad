@@ -28,7 +28,10 @@
 #      back  start                little centre buttons
 #      l3  r3                     stick clicks — many pads never send these
 #      dpad_up  dpad_down  dpad_left  dpad_right
+#                                 (a HID hat switch is decoded into these
+#                                  by the plugin — no profile entry needed)
 #      guide                      big middle button, often eaten by macOS
+#      share                      Xbox Series Share / DualSense Create
 #
 #      left_up   left_down   left_left   left_right       sticks, per direction
 #      right_up  right_down  right_left  right_right
@@ -64,7 +67,9 @@ profile = "xbox360"
 #
 # [profile.axes]
 # X  = "left_x"    # sticks rest centred, signed range
-# Z  = "lt"        # triggers rest at one end, 0…255
+# Z  = "lt"        # triggers rest at one end, 0…255 (wired Xbox pads)
+# Brake       = "lt"   # Bluetooth Xbox Series pads put the triggers on the
+# Accelerator = "rt"   # HID Simulation page instead — use these names
 
 
 [tuning]
@@ -155,6 +160,12 @@ goto                   = "y"     # session navigator (prefix+g)
 # agent_back           = ""      # return to the agent you came from
 # agent_overview       = ""      # notification: how is everything doing
 # agent_read           = ""      # notification: focused agent's last output
+# agent_quit           = ""      # Escape, then /exit + Enter to the focused
+#                                # agent's pane, over the socket
+# tab_next             = ""      # socket-based cycling, for when the keybinding
+# tab_previous         = ""      # route is unavailable (see README)
+# workspace_next       = ""
+# workspace_previous   = ""
 
 # ── Tabs ────────────────────────────────────────────────────────────────
 next_tab               = "rb"
