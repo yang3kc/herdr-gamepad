@@ -22,7 +22,7 @@ without the first six.
 - **macOS**, Apple Silicon tested. The plugin reads the pad through IOKit HID and types
   through CGEvent; none of it runs on Linux or Windows.
 - **Herdr**, verified on 0.8.2. The layout calls `agent.prompt`, `pane.send_text`,
-  `pane.zoom`, `pane.focus_direction`, `pane.current` and `plugin.action.invoke` over
+  `pane.focus_direction`, `pane.current` and `plugin.action.invoke` over
   the socket. The plugin manifest allows 0.7.0, but those calls were only checked on
   0.8.2 — run `herdr --version`.
 - **Swift**, from the Xcode Command Line Tools (`xcode-select --install`), to build the
@@ -58,7 +58,7 @@ without the first six.
 ```
         LB ──────────────┐              ┌────────────── RB
      prev agent          │              │           next agent
-        LT  zoom pane                                RT  voice
+        LT  cancel voice                             RT  voice
 
         ┌──────────┐                        ┌────────┐
         │  D-PAD   │    ⧉ View   ≡ Menu     │   Y    │  next waiting agent
@@ -79,7 +79,7 @@ without the first six.
 | **A** / **B** / **X** | Return / Escape / Tab — approve, deny or interrupt, move between fields | key |
 | **Y** | Jump to the next agent that is blocked or done (`agent_next_waiting`) | socket |
 | **LB** / **RB** | Previous / next agent — sent as your own Herdr keybinding | key |
-| **LT** | Toggle zoom on the focused pane (`pane.zoom`) | socket |
+| **LT** | Cancel dictation without transcribing — sends superwhisper's cancel hotkey | key |
 | **RT** | Toggle dictation — sends superwhisper's hotkey | key |
 | **View ⧉** | `/model` — Claude Code's model picker, submitted with `agent.prompt` | socket |
 | **Menu ≡** | `/effort` — Claude Code's effort picker, submitted with `agent.prompt` | socket |
@@ -105,14 +105,16 @@ permission, and it reaches the Herdr-focused pane whatever app is frontmost.
    harmless — and `agent.prompt` refuses when the agent is blocked on a dialog
    (`agent_blocked`) or when the pane's foreground process is not the agent
    (`agent_not_ready`), so a stray press types nothing.
-2. **Socket over keystrokes wherever possible.** Everything on the D-pad, LT, View,
+2. **Socket over keystrokes wherever possible.** Everything on the D-pad, View,
    Menu, Y, L3 and the Xbox button goes through the socket. Only Return / Escape / Tab,
-   Shift+Tab, Space, the arrows, scrolling and the dictation hotkey are synthetic keys.
+   Shift+Tab, Space, the arrows, scrolling and the two dictation hotkeys are synthetic keys.
 3. **Real buttons for the most-pressed actions**, stick clicks for the rare ones.
    Dictation started on a stick click and moved to RT for that reason.
 
 Deliberately absent: Ctrl-C (a second one exits Claude Code; B interrupts, D-pad ↓ then
-A quits) and workspace and tab switching (tried on the triggers, not needed).
+A quits), workspace and tab switching (tried on the triggers, not needed), and pane zoom
+(sat on LT until the trigger was given to cancel-dictation; `prefix+z` on the keyboard
+covers it).
 
 ## Rumble
 
@@ -189,7 +191,7 @@ plist in this folder.
 
 **The Accessibility entry is tied to the binary's ad-hoc code signature.** Rebuilding or
 reinstalling the plugin invalidates it. The give-away: the socket bindings (Y, L3, the
-D-pad, LT, View, Menu, Xbox) keep working while every key binding goes silent. Re-add
+D-pad, View, Menu, Xbox) keep working while every key binding goes silent. Re-add
 the binary and it comes back.
 
 **`herdr-keys.toml` exists because the plugin's TOML reader cannot parse multi-line

@@ -120,6 +120,14 @@ space       = "r3"      # right stick click: toggle an item in Claude Code's
 # This plugin cannot type F-keys, so a letter chord is the only option here.
 "ctrl+w" = "rt"         # ADJUST: your dictation app's toggle hotkey (superwhisper here)
 
+# LT = cancel a superwhisper recording without transcribing it, by sending its
+# Cancel hotkey. Same trigger mechanics as RT: counts as pressed past
+# trigger_threshold, fires once per squeeze. Read the current value with:
+#   defaults read com.superduper.superwhisper KeyboardShortcuts_cancelRecording
+# (carbonKeyCode 12 + carbonModifiers 4096 is ctrl+q.) Bound 2026-08-25; LT
+# was pane zoom before that, which is back on the keyboard (prefix+z).
+"ctrl+q" = "lt"         # ADJUST: your dictation app's cancel hotkey (superwhisper here)
+
 # Slash commands (/effort, /compact, /clear, /model) are NOT typed as keys
 # any more — see the agent.prompt [[bind]] entries below. Typing them here
 # would also work ("/ e f f o r t return" = "back" did, before the fork), but
@@ -200,14 +208,6 @@ desc   = "D-pad down: type /exit (press A to quit the agent session)"
 button = "dpad_down"
 method = "pane.send_text"
 params = { pane_id = "$focused", text = "/exit" }
-
-[[bind]]
-desc   = "LT: toggle zoom on the focused pane"
-trigger = "lt"
-method = "pane.zoom"
-params = { mode = "toggle" }
-# Zoom in to read one agent, scroll with the right stick, zoom out. Socket
-# call, so it works without Accessibility and whatever app is frontmost.
 
 [[bind]]
 desc   = "right stick left: focus the pane to the left"

@@ -97,13 +97,13 @@ nothing, survives a Herdr restart, and sees new panes on its own.
 
 This is the layout I run — Bluetooth Xbox Series X|S, macOS, Herdr with several Claude
 Code panes. The keyboard stays primary; the pad is for the off hand: approve or deny,
-jump to the agent that needs you, pick effort or model, dictate, compact or quit — and
+jump to the agent that needs you, pick effort or model, dictate (or cancel a dictation), compact or quit — and
 feel a buzz when an agent blocks on a prompt or finishes.
 
 ```
         LB ──────────────┐              ┌────────────── RB
      prev agent          │              │           next agent
-        LT  zoom pane                                RT  voice
+        LT  cancel voice                             RT  voice
 
         ┌──────────┐                        ┌────────┐
         │  D-PAD   │    ⧉ View   ≡ Menu     │   Y    │  next waiting agent
