@@ -128,11 +128,27 @@ space       = "r3"      # right stick click: toggle an item in Claude Code's
 # was pane zoom before that, which is back on the keyboard (prefix+z).
 "ctrl+q" = "lt"         # ADJUST: your dictation app's cancel hotkey (superwhisper here)
 
-# Slash commands (/effort, /compact, /clear, /model) are NOT typed as keys
-# any more — see the agent.prompt [[bind]] entries below. Typing them here
-# would also work ("/ e f f o r t return" = "back" did, before the fork), but
-# keys go to whatever window is frontmost and, worse, Return would approve an
-# open permission dialog. agent.prompt refuses a blocked agent instead.
+# Claude Code slash commands, TYPED as keystrokes, never submitted. Each
+# sequence puts the text in the focused pane's input box and stops there;
+# press A to run it, or B to back out. No Return means nothing can be
+# approved by accident, so these are safe as keys.
+#
+# History: from 2026-08-22 to 2026-09-08 these five were socket calls
+# (agent.prompt for /effort and /model, pane.send_text for the rest) with
+# "$focused" as the pane. That broke with herdr 0.9 remote machines: every
+# machine is its own server, and the daemon only talks to the LOCAL socket,
+# so "$focused" always named a local pane and the text landed in a local
+# agent while the window showed a remote one. Keystrokes follow the selected
+# machine, like A and B do. The cost: /effort and /model now need an A press
+# to open the picker, and the agent_blocked / agent_not_ready checks that
+# agent.prompt did are gone. Do not add "return" to these lines — it would
+# approve an open permission dialog.
+"/ e f f o r t"   = "start"       # Menu: /effort, then A opens the picker
+"/ m o d e l"     = "back"        # View: /model, then A opens the picker
+"/"               = "dpad_up"     # opens Claude Code's command menu
+"/ c o m p a c t" = "dpad_left"   # A runs it
+"/ c l e a r"     = "dpad_right"  # A runs it
+"/ e x i t"       = "dpad_down"   # A quits the agent session
 
 # Left stick = arrow keys. Moves the selection in a confirmation dialog.
 #
@@ -155,59 +171,13 @@ scroll_down = { input = "right_down", repeat = true }   # stick physically up
 # ── Raw socket calls ─────────────────────────────────────────────────────
 #  These need no keybinding and no Accessibility permission.
 
-# ── Claude Code slash commands, to the herdr-focused pane ────────────────
-#  "$focused" is the focused pane id (works since the fork). Two flavours:
-#
-#  SUBMITTED  (agent.prompt — types the text and presses Enter). Used for the
-#  two pickers, which are harmless to open. herdr refuses when the pane's
-#  agent is blocked on a dialog (agent_blocked) or the pane's foreground
-#  process is not the agent (agent_not_ready); both surface as a "Gamepad
-#  error" notification and nothing is typed. Verified 2026-08-22: both
-#  pickers opened in a live Claude Code pane.
-#
-#  TYPED ONLY (pane.send_text — puts the text in the input box, no Enter).
-#  Used for the three commands that change or end the session: /compact,
-#  /clear, /exit. You read it, then press A to run it, or B to back out.
-#  No Enter means nothing can be approved by accident, which is why these
-#  do not need the agent checks or a leading Escape.
+# ── Claude Code slash commands ───────────────────────────────────────────
+#  Moved to the [input] table on 2026-09-08 (typed keystrokes) so they reach
+#  the machine selected in the herdr window. See the note there for why.
+#  "$focused" still works for local-only socket calls, but it resolves
+#  against the local server and never names a pane on a remote machine.
 #
 #  Zoom stays on the keyboard (prefix+z).
-
-[[bind]]
-desc   = "Menu: open Claude Code's effort picker (choose with the left stick + A)"
-button = "start"
-method = "agent.prompt"
-params = { target = "$focused", text = "/effort" }
-
-[[bind]]
-desc   = "View: open Claude Code's model picker"
-button = "back"
-method = "agent.prompt"
-params = { target = "$focused", text = "/model" }
-
-[[bind]]
-desc   = "D-pad up: type / — opens Claude Code's command menu; pick with the left stick + A"
-button = "dpad_up"
-method = "pane.send_text"
-params = { pane_id = "$focused", text = "/" }
-
-[[bind]]
-desc   = "D-pad left: type /compact (press A to run it)"
-button = "dpad_left"
-method = "pane.send_text"
-params = { pane_id = "$focused", text = "/compact" }
-
-[[bind]]
-desc   = "D-pad right: type /clear (press A to run it)"
-button = "dpad_right"
-method = "pane.send_text"
-params = { pane_id = "$focused", text = "/clear" }
-
-[[bind]]
-desc   = "D-pad down: type /exit (press A to quit the agent session)"
-button = "dpad_down"
-method = "pane.send_text"
-params = { pane_id = "$focused", text = "/exit" }
 
 [[bind]]
 desc   = "right stick left: focus the pane to the left"

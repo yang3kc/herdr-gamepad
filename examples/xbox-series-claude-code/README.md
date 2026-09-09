@@ -21,10 +21,10 @@ without the first six.
 
 - **macOS**, Apple Silicon tested. The plugin reads the pad through IOKit HID and types
   through CGEvent; none of it runs on Linux or Windows.
-- **Herdr**, verified on 0.8.2. The layout calls `agent.prompt`, `pane.send_text`,
-  `pane.focus_direction`, `pane.current` and `plugin.action.invoke` over
-  the socket. The plugin manifest allows 0.7.0, but those calls were only checked on
-  0.8.2 — run `herdr --version`.
+- **Herdr**, verified on 0.8.2 and 0.9.0. The layout calls `pane.focus_direction`,
+  `pane.current` and `plugin.action.invoke` over the socket. The plugin manifest
+  allows 0.7.0, but those calls were only checked on 0.8.2 and 0.9.0 — run
+  `herdr --version`.
 - **Swift**, from the Xcode Command Line Tools (`xcode-select --install`), to build the
   plugin. No Xcode, no package manager, one binary.
 - **This fork of herdr-gamepad** (`yang3kc/herdr-gamepad`). Upstream cannot see the
@@ -81,12 +81,12 @@ without the first six.
 | **LB** / **RB** | Previous / next agent — sent as your own Herdr keybinding | key |
 | **LT** | Cancel dictation without transcribing — sends superwhisper's cancel hotkey | key |
 | **RT** | Toggle dictation — sends superwhisper's hotkey | key |
-| **View ⧉** | `/model` — Claude Code's model picker, submitted with `agent.prompt` | socket |
-| **Menu ≡** | `/effort` — Claude Code's effort picker, submitted with `agent.prompt` | socket |
+| **View ⧉** | Type `/model` into the focused pane — A opens Claude Code's model picker | key |
+| **Menu ≡** | Type `/effort` into the focused pane — A opens Claude Code's effort picker | key |
 | **Xbox ⊕** | Bring the terminal running Herdr to the front (`padkit`) | socket |
 | **Share** | Shift+Tab — cycle Claude Code's permission mode | key |
-| **D-pad ↑** | Type `/` into the focused pane — Claude Code's command menu opens; pick with the left stick and A | socket |
-| **D-pad ←** / **→** / **↓** | Type `/compact` / `/clear` / `/exit` into the focused pane — **A runs it, B clears it** | socket |
+| **D-pad ↑** | Type `/` into the focused pane — Claude Code's command menu opens; pick with the left stick and A | key |
+| **D-pad ←** / **→** / **↓** | Type `/compact` / `/clear` / `/exit` into the focused pane — **A runs it, B clears it** | key |
 | **L3** | Notification listing every agent's state (`agent_overview`) | socket |
 | **R3** | Space — toggle an item in Claude Code's multi-select dialogs | key |
 | **Left stick** | Arrow keys, auto-repeating — move the selection in a dialog or a picker | key |
@@ -99,15 +99,20 @@ permission, and it reaches the Herdr-focused pane whatever app is frontmost.
 
 ## Three rules that shaped it
 
-1. **Nothing that changes or ends a session fires on one press.** The D-pad only
-   *types* `/compact`, `/clear` and `/exit` into the input box (`pane.send_text`);
-   you read it and press A. The two pickers are submitted, because opening a picker is
-   harmless — and `agent.prompt` refuses when the agent is blocked on a dialog
-   (`agent_blocked`) or when the pane's foreground process is not the agent
-   (`agent_not_ready`), so a stray press types nothing.
-2. **Socket over keystrokes wherever possible.** Everything on the D-pad, View,
-   Menu, Y, L3 and the Xbox button goes through the socket. Only Return / Escape / Tab,
-   Shift+Tab, Space, the arrows, scrolling and the two dictation hotkeys are synthetic keys.
+1. **Nothing that changes or ends a session fires on one press.** Every slash
+   command (`/`, `/compact`, `/clear`, `/exit`, `/effort`, `/model`) is only *typed*
+   into the input box, never submitted; you read it and press A, or B to clear it.
+   No Return in those sequences means a stray press cannot approve an open
+   permission dialog.
+2. **Keystrokes for anything that must reach a remote machine.** Herdr 0.9 can show
+   workspaces from saved SSH machines in one window. Each machine is its own server
+   with its own socket, and this plugin only talks to the local one, so a socket
+   call with `"$focused"` always names a *local* pane. Synthetic keys go to the
+   frontmost window and Herdr forwards them to the selected machine. That is why
+   the slash commands are `[input]` entries and not `agent.prompt` / `pane.send_text`
+   calls (they were, until 2026-09-08). The socket is still used where it beats a
+   keystroke and remote support does not matter: Y, L3, the Xbox button, pane focus,
+   and rumble — all of which see local agents only.
 3. **Real buttons for the most-pressed actions**, stick clicks for the rare ones.
    Dictation started on a stick click and moved to RT for that reason.
 
